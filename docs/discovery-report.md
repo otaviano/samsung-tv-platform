@@ -301,10 +301,13 @@ tentando desabilitar serviços que o firmware não permite desabilitar.
    `extra -act|-dact <índice>`, `install [--accept-license] [--no-java-check] <pkg>[,...]`.
    E o `--add` nem era necessário: o repo **"Samsung Tizen TV SDK" já vem pré-registrado**
    (índice 3) e ativo, assim como a **Certificate Extension 2.0.75** (índice 1).
-9. Como criar o perfil de certificado de distribuição Samsung **sem GUI**? O
-   `Certificate-Manager` 3.1.3 e o `cert-add-on` 2.0.75 estão instalados, mas o fluxo
-   documentado é gráfico e exige login em conta Samsung. A validar se
-   `tizen certificate` / `tizen security-profile` cobrem o caminho headless — bloqueia E6.
+9. ~~Como criar o perfil de certificado de distribuição Samsung **sem GUI**?~~
+   **Contornada (E6, 2026-11-06)** — para instalar via SDB com Developer Mode ligado, o
+   device **aceita assinatura Tizen comum** (autor via `tizen certificate` + distribuidor
+   Tizen público do SDK). Certificado Samsung não foi necessário. Continua em aberto para
+   qualquer distribuição fora do modo de desenvolvimento. Registro do fluxo Samsung, lido
+   do jar do `cert-add-on` (não executado): OAuth em `account.samsung.com` com retorno em
+   `http://localhost`, CSRs enviados a `svdca.samsungqbe.com/apis/v3/{authors,distributors}`.
 
 ## 6. Próximos experimentos (em ordem, cada um reversível)
 

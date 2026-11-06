@@ -23,6 +23,10 @@ E1–E4 concluídos: SDB conectado, Tizen 5.5 / armv7 confirmados, **sem root e 
 [docs/discovery-report.md](docs/discovery-report.md) e
 [docs/runbooks/e4-sdb-readonly.md](docs/runbooks/e4-sdb-readonly.md).
 
+E6 concluído: app próprio assinado com certificado Tizen comum instala, roda e desinstala
+(`scripts/tv-app.sh`); runtime **Chromium 69** medido no device —
+[docs/runbooks/e6-hello-world.md](docs/runbooks/e6-hello-world.md).
+
 Em andamento: **E5**, resolver DNS log-only (`scripts/dns-logonly.sh`) —
 [docs/runbooks/e5-dns-logonly.md](docs/runbooks/e5-dns-logonly.md).
 

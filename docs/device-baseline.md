@@ -45,6 +45,35 @@
 | `secure_protocol` | `enabled` | |
 | `multiuser_support` | `enabled` | apps do usuário sob uid 5001 |
 
+## Confirmado via app instalado (E6, 2026-11-06)
+
+Medido por `experiments/e6-hello` rodando no device; relatório recebido por
+`scripts/report-sink.py`. Bruto em `evidence/raw-tv-report-20261106.log` (gitignored).
+
+| Item | Valor | Impacto |
+| --- | --- | --- |
+| User agent | `Mozilla/5.0 (SMART-TV; LINUX; Tizen 5.5) AppleWebKit/537.36 (KHTML, like Gecko) 69.0.3497.106/5.5 TV Safari/537.36` | **Chromium 69.0.3497.106 confirmado** (antes inferido da doc) |
+| Tela / viewport do web app | `1920x1080`, `dpr=1` | A camada web renderiza em 1080p, embora o painel seja UHD. Desenhar a UI em 1920×1080 |
+| `window.tizen`, `window.webapis` | presentes | APIs de plataforma disponíveis |
+| async/await, object spread, `Promise.finally`, `fetch` | suportados | ES2017+ nativo |
+| optional chaining, `??` | **não** | Transpilar |
+| IntersectionObserver, ResizeObserver | suportados | |
+| CSS grid, custom properties | suportados | |
+| `gap` em **flexbox** | **não** (medido por layout) | `CSS.supports('gap')` dá falso positivo — responde pelo gap de grid |
+| `:focus-visible` | **não** | Foco visível via classe própria |
+| localStorage, indexedDB | suportados | Cache local viável |
+| Teclas | 46 suportadas via `tvinputdevice`; ver tabela abaixo | |
+
+Teclas observadas no `keydown` (controle do usuário):
+
+| Tecla | `keyCode` | `key` | Registro necessário? |
+| --- | --- | --- | --- |
+| ← ↑ → ↓ | 37 38 39 40 | `Arrow*` | não |
+| OK | 13 | `Enter` | não |
+| BACK | 10009 | `XF86Back` | não |
+| Vermelho / Verde / Amarelo / Azul | 403 / 404 / 405 / 406 | `XF86Red` … `XF86Blue` | **sim** (`tvinputdevice.registerKey`) |
+| Play/Pause | 10252 | `XF86PlayBack` | **sim** |
+
 ## Não confirmado pelo device
 
 - ~~Versão exata do Tizen.~~ **Resolvida via SDB: `platform_version:5.5`.** A inferência

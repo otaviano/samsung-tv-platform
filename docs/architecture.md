@@ -41,8 +41,14 @@ App web Tizen, TypeScript/HTML/CSS.
 
 **Restrição dura confirmada: o alvo é Chromium M69** (Tizen 5.5, 2020). Isso define o build:
 
-- target ≈ **ES2017**, sem contar com optional chaining / nullish coalescing nativos
-- polyfills explícitos; verificar `ResizeObserver`, `IntersectionObserver` v2
+- target ≈ **ES2017**, sem optional chaining / nullish coalescing nativos (**medido no
+  device**, E6)
+- **sem `gap` em flexbox** e **sem `:focus-visible`** (medido, E6): espaçamento por margem
+  ou grid; foco por classe própria
+- `ResizeObserver` e `IntersectionObserver` v1 presentes (medido, E6)
+- canvas da UI: **1920×1080, dpr 1**
+- teclas coloridas e de mídia exigem `tvinputdevice.registerKey` + privilégio
+  `tv.inputdevice`; códigos em `device-baseline.md`
 - UA esperado: `... (SMART-TV; LINUX; Tizen 5.5) ... 69.0.3497.106.1/5.5 ...`
 - navegação **por controle remoto**: foco direcional, sem hover, sem ponteiro.
   Área mínima de alvo e estado de foco visível são requisitos de acessibilidade aqui, não

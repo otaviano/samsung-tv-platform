@@ -132,6 +132,34 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-06 — E6: hello-world assinado instalado, medido e removido
+
+- **Degrau:** 3. Rollback testado: sim (desinstalação executada e verificada).
+- **Pré-condição registrada:** usuário autorizou seguir. Atualização automática de firmware
+  **não registrada explicitamente** como desligada — pendência da checklist de
+  `rollback-strategy.md`, junto com o caminho de factory reset.
+- **Hipótese:** o device instala um web app próprio via SDB; incerto se exigiria
+  certificado Samsung (incógnita 9).
+- **Passos exatos:** `tizen certificate` + `tizen security-profiles add` (assinatura Tizen
+  comum); `scripts/tv-app.sh install|run|uninstall experiments/e6-hello`. Runbook:
+  [runbooks/e6-hello-world.md](runbooks/e6-hello-world.md).
+- **Resultado observado:**
+  - Assinatura Tizen comum **aceita** — certificado Samsung desnecessário em Developer
+    Mode. Incógnita 9 contornada.
+  - `tizen install` falhou sem diagnóstico; `sdb shell 0 vd_appinstall` funcionou.
+  - Update por cima (v0.1 → v0.2) funcionou.
+  - Runtime: **Chromium 69.0.3497.106** confirmado do device; sem optional chaining,
+    `??`, flex `gap`, `:focus-visible`; 1920×1080 dpr 1. Teclas mapeadas (setas, OK,
+    BACK, coloridas, Play/Pause). Detalhes em `device-baseline.md`.
+  - Primeira tentativa de uninstall com app ID: `failed[132]`. Com package ID: removido;
+    applist 310 → **309** (igual ao E4).
+- **Erro próprio:** o teste de flex gap da v0.1 (`CSS.supports`) dava falso positivo;
+  corrigido na v0.2 com medição de layout.
+- **Estado final:** app removido. Developer Mode segue ligado (política vigente).
+- **Risco de recuperação:** nenhum residual.
+
+---
+
 ## 2026-11-06 — E5 (coleta iniciada): TV apontada para o resolver
 
 - **Degrau:** 2. `scripts/dns-logonly.sh fw-up` (2/2 regras ativas) e DNS manual na TV =

@@ -16,3 +16,6 @@ node_modules/
 dist/
 bin/
 obj/
+
+# Endpoint do report-sink (contém <HOST_IP>) — gerado no deploy
+experiments/**/report-target.js
