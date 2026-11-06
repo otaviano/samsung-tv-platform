@@ -1,0 +1,18 @@
+{
+  // Ver ADR-0003. `lib` restrito é a guarda contra APIs de JS ausentes no Chromium 69.
+  // Limite conhecido: a lib "DOM" não tem versão e NÃO protege APIs de DOM novas.
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["ES2017", "ES2018.Promise", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}

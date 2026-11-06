@@ -61,5 +61,9 @@ gerado no deploy e gitignored.
    funciona. Causa da falha do CLI: não investigada.
 4. **`vd_appuninstall` exige o package ID** (`E6HelloTst`). Com o app ID
    (`E6HelloTst.e6hello`) retorna `uninstall failed[132]`.
-5. **`CSS.supports('gap', …)` mente para flexbox.** Responde pelo gap de grid. Testar flex
+5. **O CLI reescreve o perfil após cada package bem-sucedido**, apontando a senha para
+   arquivos `.pwd` que não consegue criar sem keyring → a execução seguinte falha com
+   `Invaild password`. `tv-app.sh` zera os campos antes de cada execução (validado com
+   duas instalações seguidas, 2026-11-06).
+6. **`CSS.supports('gap', …)` mente para flexbox.** Responde pelo gap de grid. Testar flex
    gap medindo layout.

@@ -1,0 +1,28 @@
+{
+  "name": "tv-app",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Home custom para Samsung TV (Tizen 5.5 / Chromium 69). Ver docs/decisions/0003-build-do-tv-app.md",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:dev": "node build.mjs --dev",
+    "typecheck": "tsc --noEmit",
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "test": "vitest run --passWithNoTests",
+    "check": "npm run typecheck && npm run lint:css && npm test"
+  },
+  "dependencies": {
+    "preact": "10.29.8"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "stylelint": "18.0.0",
+    "stylelint-no-unsupported-browser-features": "8.1.2",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  },
+  "allowScripts": {
+    "esbuild": false
+  }
+}

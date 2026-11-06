@@ -1,6 +1,6 @@
 # ADR-0003: Build do tv-app — TypeScript + esbuild (chrome69) + Preact
 
-- **Status:** proposto
+- **Status:** aceito (2026-11-06)
 - **Data:** 2026-11-06
 
 ## Contexto
@@ -36,7 +36,7 @@ foco próprio e independente de framework, sem polyfills por padrão.**
 | UI | Preact 10 (hooks, sem `preact/compat`) | Modelo declarativo para estado que vai crescer, ~4 KB gz; Preact 10 suporta até IE11, então M69 é folgado ([Preact — browser support](https://preactjs.com/guide/v10/getting-started)) |
 | Foco | módulo TS próprio (`src/focus/`), sem dependência de Preact | É o núcleo da experiência; lógica geométrica pura, testável sem DOM; não amarra a UI a uma lib de spatial navigation React-first |
 | Guarda de API | `tsconfig` `lib: ["ES2017", "ES2018.Promise", "DOM"]` | Erro de tipo ao usar API de JS que o M69 não tem. **Limite:** a lib `DOM` do TS é moderna e não protege APIs de DOM |
-| Guarda de CSS | stylelint + `stylelint-no-unsupported-browser-features`, browserslist `chrome 69` | Pega flex `gap`, `:focus-visible` etc. em lint. Cobertura da regra para flex gap: **Provável**, validar no setup |
+| Guarda de CSS | stylelint + `stylelint-no-unsupported-browser-features`, browserslist `chrome 69` | **Validado no setup:** pega flex `gap` e `:focus-visible`; **não pega `aspect-ratio`** (Chrome 88). `css-overflow` ignorado (falso positivo para `overflow: hidden`) |
 | Polyfills | nenhum por padrão; adicionar só com evidência do device | O baseline medido já cobre o necessário |
 | Testes | Vitest para lógica pura (foco, cache, modelo); smoke no device via `report-sink` | Emulador fora do loop |
 | Saída | `src/tv-app/dist/` com `config.xml`, `index.html`, `app.js`, `app.css` | `tv-app.sh install src/tv-app/dist` sem mudança no script |
@@ -67,6 +67,11 @@ src/tv-app/
   empacotar/assinar/instalar. Reprodutibilidade via `package-lock.json`. **Revisitar** se
   o build precisar rodar em CI.
 - Dependências de runtime: só `preact`. O resto é devDependency.
+- **Preact fixado na major 10** (`--save-exact`). Achado no setup: o **Preact 11** agenda
+  renders com `queueMicrotask` (Chrome 71+) — `ReferenceError` no primeiro `setState` no
+  M69. O 10 usa `Promise.prototype.then`. **Qualquer upgrade de dependência de runtime
+  exige auditar as APIs usadas contra o baseline do device**, não só a sintaxe: o esbuild
+  converte sintaxe, não APIs.
 
 ## Alternativas consideradas
 

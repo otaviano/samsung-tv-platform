@@ -1,0 +1,69 @@
+/* Canvas fixo 1920x1080, dpr 1 (medido no device, E6).
+   Sem `gap` em flexbox e sem :focus-visible no Chromium 69 — o stylelint barra. */
+:root {
+  --bg: #0e0f12;
+  --fg: #e8e8ea;
+  --muted: #8a8d96;
+  --tile: #1c1e24;
+  --safe-x: 96px; /* margem de segurança contra overscan */
+  --safe-y: 54px;
+}
+
+html,
+body {
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: sans-serif;
+}
+
+.home {
+  padding: var(--safe-y) var(--safe-x);
+}
+
+.home__header {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 48px;
+}
+
+.home__header h1 {
+  margin: 0 24px 0 0;
+  font-size: 56px;
+  font-weight: 600;
+}
+
+.home__tag {
+  color: var(--muted);
+  font-size: 24px;
+}
+
+.row {
+  margin-bottom: 48px;
+}
+
+.row__title {
+  margin: 0 0 16px;
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.row__items {
+  display: flex;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 320px;
+  height: 180px;
+  margin-right: 24px;
+  border-radius: 12px;
+  background: var(--tile);
+  font-size: 48px;
+}

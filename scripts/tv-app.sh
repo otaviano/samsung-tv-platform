@@ -45,13 +45,21 @@ sdb_() { "$TIZEN" sdb -s "$target" "$@"; }
 
 package() {
   # Endpoint do report-sink, gerado fora do git (contém <HOST_IP>).
-  printf "window.REPORT_URL = 'http://%s:%s';\n" "$HOST_IP" "$REPORT_PORT" > "$app/report-target.js"
+  # Só para apps que o referenciam (experiments/); o src/tv-app injeta via build --dev.
+  if grep -q 'report-target.js' "$app/index.html" 2>/dev/null; then
+    printf "window.REPORT_URL = 'http://%s:%s';\n" "$HOST_IP" "$REPORT_PORT" > "$app/report-target.js"
+  fi
   "$TIZEN" bash -lc '
     set -euo pipefail
     src="/work/$1"; profile="$2"; dist="$3"; pkgid="$4"
     pw="$(cat /work/secrets/tizen-author.pw)"
     build="$(mktemp -d)"; cp -r "$src"/. "$build"/; rm -rf "$build/out"
-    tizen cli-config "profiles.path=$HOME/tizen-studio-data/profile/profiles.xml" >/dev/null
+    profiles="$HOME/tizen-studio-data/profile/profiles.xml"
+    tizen cli-config "profiles.path=$profiles" >/dev/null
+    # Após um package bem-sucedido o CLI REESCREVE o perfil apontando a senha para arquivos
+    # .pwd que ele não consegue criar sem keyring -> a execução seguinte falha com
+    # "Invaild password". Zerar a cada execução torna o script independente desse estado.
+    sed -i -E "s/(distributor=\"[01]\" key=\"[^\"]*\" password=\")[^\"]*\"/\1\"/" "$profiles"
     # pty: o prompt de senha do CLI exige console. Com as senhas VAZIAS no profiles.xml
     # (de propósito — nada guardado), a ordem é: senha autor, "salvar? Y/N", senha
     # distribuidor, "salvar? Y/N". Respondemos N: a senha nunca é persistida pelo CLI.

@@ -132,6 +132,25 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-06 — tv-app: esqueleto (ADR-0003) instalado no device
+
+- **Degrau:** 3. Rollback: `scripts/tv-app.sh uninstall src/tv-app/dist` (mesmo mecanismo
+  validado no E6).
+- **Passos exatos:** `npm run check && npm run build:dev` em `src/tv-app`;
+  `scripts/tv-app.sh install src/tv-app/dist` (2×); `run`.
+- **Resultado observado:** `OtvHome001.home` instalado e aberto; boot report recebido:
+  render inicial **94 ms**, 5 teclas extras registradas. Bundle de produção 11,8 KB
+  (5,1 KB gz).
+- **Achados do setup (ADR-0003 atualizado):**
+  - **Preact 11 incompatível com o M69** (`queueMicrotask`, Chrome 71+). Fixado o 10.
+  - stylelint validado com sonda: pega flex `gap` e `:focus-visible`, **não pega
+    `aspect-ratio`**.
+  - `tv-app.sh` quebrava na 2ª execução: o CLI reescreve o perfil de assinatura.
+    Corrigido (zera senhas a cada execução).
+- **Estado final:** app instalado no device (nosso, degrau 3).
+
+---
+
 ## 2026-11-06 — Checklist de recuperação: auto-update confirmado desligado
 
 - **Degrau:** 0 (leitura de menu, nada alterado).
