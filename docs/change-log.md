@@ -72,7 +72,22 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
-## PENDENTE — E2 (tentativa 2)
+## 2026-11-06 — E2 (tentativa 2): mesmo resultado; mecanismo de rejeição confirmado
+
+- **Resultado:** `developerIP` permanece com o IP da própria TV. `sdb connect` segue
+  `failed to connect`.
+- **Evidência nova:** teste de socket cru — a TV aceita o TCP vindo da estação e fecha em
+  ~0,01 s sem enviar byte algum. Descarta filtro de pacotes e serviço ausente; é rejeição
+  na camada de aplicação. Mecanismo: **Confirmado**. Atribuição ao `developerIP`: Provável.
+- **Correção de critério:** "porta 26101 aberta" foi removido como sinal de sucesso.
+- **Bug próprio encontrado:** `scripts/tizen.sh` usava containers `--rm`, o que matava o
+  servidor sdb entre comandos. Corrigido para container persistente.
+- **Próximo:** power cycle de 60 s pela tomada (não standby) e leitura do valor exibido no
+  campo Host PC IP, para separar "não salvou" de "salvou e a API reporta outra coisa".
+
+---
+
+## PENDENTE — E2 (tentativa 3)
 
 Refazer informando `<HOST_IP>` em **Host PC IP**. Reconfirmar antes:
 `ip -4 -br addr show wlo1`. Toolchain (E3) já está pronto para validar.

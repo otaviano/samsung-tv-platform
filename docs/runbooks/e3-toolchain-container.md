@@ -39,9 +39,20 @@ O repo é montado em `/work`. A rede é a do host (`--network host`), para o SDB
 | `~/tizen-studio-data` | Volume `tizen-studio-data` — perfis de certificado, keystore |
 | `~/.sdb` | Volume `tizen-sdb` — chaves do sdb |
 
-Extensões são instaladas em **build time**, não em runtime. `scripts/tizen.sh` roda
-containers `--rm`; instalar em runtime jogaria o resultado fora. Esse foi um bug real da
-primeira versão do wrapper, corrigido.
+Extensões são instaladas em **build time**, não em runtime.
+
+### Dois bugs reais do wrapper, corrigidos
+
+1. **Volume no caminho errado.** A primeira versão montava `~/.tizen-state`, caminho que o
+   toolchain não usa. Qualquer coisa instalada em runtime se perdia.
+2. **Container `--rm` matava a sessão do sdb.** O `sdb` mantém um servidor em background
+   (porta 26099) que guarda as conexões. Com `--rm`, cada comando subia um servidor novo e
+   vazio — sintoma visível: todo comando reimprimia `* Server is not running *`, e um
+   `sdb connect` seguido de `sdb devices` **nunca** veria o device, porque rodariam em
+   processos sdb distintos.
+
+Hoje o wrapper mantém um container nomeado (`tizen-tv-dev`) e usa `podman exec`.
+`scripts/tizen.sh stop` o derruba; os volumes sobrevivem.
 
 ## Fatos verificados (2026-11-06)
 

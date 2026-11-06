@@ -60,8 +60,9 @@ Caminho oficial Samsung (ver Fontes):
    Se `developerIP` **não** for o `HOST_IP`, o campo não gravou: volte ao passo 4 e repita.
    Só siga quando o valor estiver correto.
 
-9. **Reiniciar a TV.** Desligue pelo controle e ligue novamente. Se não quiser depender do
-   standby, tire da tomada por ~15 s.
+9. **Power cycle completo pela tomada, ~60 s.** Não use o standby do controle: o daemon
+   SDB lê a flag de developer mode **no boot**, e o standby não reinicia o sistema.
+   Tire da tomada, espere ~60 s, religue.
 
 Depois do reboot, o painel Apps deve mostrar **"Develop Mode"** no topo.
 
@@ -87,7 +88,7 @@ Critério de aceite — os três ao mesmo tempo:
 | Sintoma | Causa provável | Ação |
 | --- | --- | --- |
 | `developerMode` segue `"0"` | popup não foi confirmado, ou TV não rebootou | repetir passos 4–8 |
-| `developerMode` `"1"`, 26101 fechada | TV não rebootou de fato | reboot pela tomada, ~15 s |
+| `developerMode` `"1"`, 26101 fechada | TV não rebootou de fato | power cycle pela tomada, ~60 s |
 | `developerMode` `"1"`, **26101 aberta, mas `sdb connect` falha** | **`developerIP` não é o IP da estação** | conferir `developerIP` no resumo; se não for `<HOST_IP>`, refazer o passo 6 |
 
 O terceiro caso aconteceu de verdade (2026-11-06, duas vezes): `developerIP` ficou
@@ -115,7 +116,29 @@ except socket.timeout: print('mantida aberta >4s — handshake SDB esperado')
 "
 ```
 
-Fechamento imediato = IP não autorizado. Conexão mantida = outro problema.
+Fechamento imediato = rejeição na camada de aplicação. Conexão mantida = outro problema.
+
+### Se o `developerIP` não grava
+
+Observado neste device em duas tentativas: o campo permanece com o IP da própria TV.
+Antes de repetir o procedimento uma terceira vez, colete evidência que distinga as causas:
+
+1. **Leia o valor na tela.** Reabra o popup de Developer mode e anote o que está no campo
+   **Host PC IP**. Isso separa "o campo não salvou" de "o campo salvou mas a API reporta
+   outra coisa" — são problemas diferentes e só um deles é seu para resolver.
+2. **Power cycle de 60 s pela tomada**, não standby (ver passo 9).
+3. **Reinicie o servidor sdb** antes de reconectar — o sdb falha com frequência na primeira
+   tentativa após a TV dormir:
+
+   ```bash
+   ./scripts/tizen.sh sdb kill-server
+   ./scripts/tizen.sh sdb start-server
+   ./scripts/tizen.sh sdb connect "$TV_IP:26101"
+   ```
+
+Confiança atual: o **mecanismo** de rejeição está Confirmado (accept + close imediato =
+camada de aplicação). A **atribuição** ao `developerIP` continua Provável, não Confirmada —
+falta o teste decisivo com o valor correto gravado.
 
 ## Conexão SDB (só depois de E3)
 
