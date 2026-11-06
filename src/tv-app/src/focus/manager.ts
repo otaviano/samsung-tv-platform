@@ -12,6 +12,7 @@ export interface Focusable {
 
 export class FocusManager {
   private current: string | null = null;
+  private moved = false;
   private readonly lastInGroup = new Map<string, string>();
   private readonly listeners = new Set<(id: string | null) => void>();
 
@@ -19,6 +20,11 @@ export class FocusManager {
 
   get focused(): string | null {
     return this.current;
+  }
+
+  /** true depois do primeiro move(): conteúdo que chega depois não deve roubar o foco. */
+  get userHasMoved(): boolean {
+    return this.moved;
   }
 
   subscribe(fn: (id: string | null) => void): () => void {
@@ -46,6 +52,7 @@ export class FocusManager {
 
   /** Move o foco. Retorna false se não há destino (o chamador pode tratar a borda). */
   move(dir: Direction): boolean {
+    this.moved = true;
     const nodes = this.measure();
     const cur = nodes.find((n) => n.id === this.current);
     if (!cur) {

@@ -132,6 +132,40 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-06 — tv-app v0.3 (E7): apps reais — listar, curar, abrir
+
+- **Degrau:** 3 (nosso app). Rollback: `tv-app.sh uninstall src/tv-app/dist`.
+- **Medido no device** (report-sink; bruto em `evidence/raw-tv-report-20261106.log`):
+  - `getAppsInfo` devolve **todos os 310 apps** a um app nosso, sem filtro, em **~3 s**.
+  - `show` **não basta** como filtro: 180 "visíveis", incluindo serviços internos
+    (`AdPlayer`, `AgingApp`), stubs `cobalt-app-*`, entradas `-dummy`. Mas é
+    **necessário**: sem ele entram `AirPlayWebApp`, `PrivacyChoices` etc.
+  - `tizen.application.launch` **abre apps de terceiros**: HBO Max 584 ms, Netflix
+    116 ms, `ok: true`. Sem bloqueio de privilégio.
+  - **BACK no app aberto volta ao Smart Hub; Home abre o menu Samsung** sobre o app
+    (observação do usuário). A nossa home não é retomada — confirma o limite de
+    `architecture.md` ("mais um app"). **Confirmado.**
+  - Ícones: 12 de 14 carregam (`/opt/usr/apps/...` legível pelo nosso app). **Netflix e
+    Prime Video falham**, e o ícone do pacote não serve (mesmo caminho / vazio). Causa
+    (inexistente vs. sem permissão) indeterminável: `sdb pull` é bloqueado para qualquer
+    arquivo em `/opt/usr/apps/`.
+  - Abertura: execute → `/boot` = **3,2 s**, dos quais ~0,4 s são nossos (JS em 247 ms
+    após a navegação, render 126 ms, cache hit). **~2,8 s são a plataforma subindo o
+    runtime web** — fora do alcance do código.
+- **Implementado:** curadoria padrão (`data/curate.ts`: loja sem serviços + allowlist de
+  pré-instalados; `adplatform.*` sempre fora), cache local (`data/appsCache.ts`), foco
+  inicial no primeiro app, pulso visual no OK. 24 testes.
+- **Erros próprios:** (1) regras derivadas só dos `show=true` e aplicadas sobre todos —
+  entrou `adplatform.ADPlayer` ("adplatform" tem 10 caracteres). Corrigido + teste com
+  os casos reais. (2) package ID derivado cortando o app ID no primeiro ponto — errado
+  para não-loja. Medição refeita.
+- **Pendente (usuário):** limpar a fileira para só os apps de interesse — vira a
+  configuração de visibilidade do objetivo 3.
+- **Hipótese a medir:** reabrir com o app ainda em memória (multitasking) deve ser
+  muito mais rápido que os 3,2 s a frio.
+
+---
+
 ## 2026-11-06 — tv-app v0.2: motor de foco direcional validado no device
 
 - **Degrau:** 3 (atualização do nosso app). Rollback: `tv-app.sh uninstall src/tv-app/dist`.

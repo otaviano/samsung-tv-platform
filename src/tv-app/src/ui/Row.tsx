@@ -5,10 +5,12 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusApi, useFocusable } from '../focus/FocusRoot';
 import type { Rect } from '../focus/geometry';
+import { report } from '../platform/report';
 
 export interface TileData {
   id: string;
   label: string;
+  icon?: string;
 }
 
 interface Props {
@@ -92,10 +94,37 @@ function Tile(props: {
   onSelect: () => void;
   setEl: (el: HTMLDivElement | null) => void;
 }) {
-  const focused = useFocusable(props.item.id, { group: props.group, rect: props.rect, onSelect: props.onSelect });
+  const [pressed, setPressed] = useState(false);
+  const [iconFailed, setIconFailed] = useState(false);
+  const focused = useFocusable(props.item.id, {
+    group: props.group,
+    rect: props.rect,
+    onSelect: () => {
+      // Feedback imediato: sem ele, OK parece "não fazer nada" (observado no device, v0.2).
+      setPressed(true);
+      setTimeout(() => setPressed(false), 180);
+      props.onSelect();
+    },
+  });
+  const cls = 'tile' + (focused ? ' is-focused' : '') + (pressed ? ' is-pressed' : '');
+  const { icon, label } = props.item;
   return (
-    <div class={focused ? 'tile is-focused' : 'tile'} ref={props.setEl}>
-      {props.item.label}
+    <div class={cls} ref={props.setEl}>
+      {icon && !iconFailed ? (
+        <img
+          class="tile__icon"
+          src={icon}
+          alt=""
+          onLoad={() => report('/icon', { id: props.item.id, ok: true })}
+          onError={() => {
+            // Netflix e Prime Video (pré-instalados de sistema) falham aqui; o ícone do pacote
+            // também não serve (mesmo caminho / vazio) — medido em 2026-11-06.
+            report('/icon', { id: props.item.id, ok: false, src: icon });
+            setIconFailed(true);
+          }}
+        />
+      ) : null}
+      <span class={icon && !iconFailed ? 'tile__label tile__label--small' : 'tile__label'}>{label}</span>
     </div>
   );
 }

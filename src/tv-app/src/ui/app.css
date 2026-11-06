@@ -81,9 +81,34 @@ body {
   transition: transform 120ms ease-out, box-shadow 120ms ease-out;
 }
 
+.tile {
+  flex-direction: column;
+  text-align: center;
+}
+
+.tile__icon {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 12px;
+  object-fit: contain;
+}
+
+.tile__label {
+  padding: 0 16px;
+}
+
+.tile__label--small {
+  font-size: 24px;
+}
+
 /* Foco por classe: :focus-visible não existe no Chromium 69. */
 .tile.is-focused {
   transform: scale(1.06);
   background: #2a2d36;
   box-shadow: 0 0 0 4px #e8e8ea;
+}
+
+.tile.is-pressed {
+  transform: scale(0.97);
+  background: #3a3e4a;
 }

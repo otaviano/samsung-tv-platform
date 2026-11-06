@@ -3,6 +3,8 @@ import { App } from './ui/App';
 import { Key, exitApp, registerKeys } from './platform/keys';
 import { report } from './platform/report';
 
+// performance.now() é relativo ao início da navegação: t0 = quanto a plataforma levou até
+// o nosso JS começar (o resto dos "3 s" percebidos não é nosso).
 const t0 = performance.now();
 const registered = registerKeys();
 
@@ -19,7 +21,9 @@ if (root) {
   render(<App />, root);
   report('/boot', {
     ua: navigator.userAgent,
+    jsStartMs: Math.round(t0),
     renderMs: Math.round(performance.now() - t0),
+    cacheHit: !!localStorage.getItem('home.apps.v1'),
     registered,
   });
 }

@@ -9,9 +9,26 @@ interface TizenInputDevice {
 interface TizenApplication {
   exit(): void;
 }
+interface TizenAppInfo {
+  id: string;
+  name: string;
+  iconPath: string;
+  version: string;
+  show: boolean;
+  categories: string[];
+  packageId: string;
+}
+interface TizenWebAPIError {
+  name: string;
+  message: string;
+}
 interface Tizen {
   tvinputdevice: TizenInputDevice;
-  application: { getCurrentApplication(): TizenApplication };
+  application: {
+    getCurrentApplication(): TizenApplication;
+    getAppsInfo(ok: (apps: TizenAppInfo[]) => void, err?: (e: TizenWebAPIError) => void): void;
+    launch(id: string, ok?: () => void, err?: (e: TizenWebAPIError) => void): void;
+  };
 }
 interface Window {
   tizen?: Tizen;
