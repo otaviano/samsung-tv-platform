@@ -132,6 +132,18 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-06 — Checklist de recuperação: auto-update confirmado desligado
+
+- **Degrau:** 0 (leitura de menu, nada alterado).
+- **Observado:** Suporte → Atualização de Software → **Atualização Automática:
+  desligada**, confirmado pelo usuário no device (pela foto, o indicador do menu sozinho
+  era ambíguo). Versão exibida no menu bate com o sufixo de `<TV_FIRMWARE>` — **sem update desde o
+  discovery**.
+- **Fecha** a pendência registrada no E6. Restam: fotos completas das telas de
+  configuração e caminho de factory reset.
+
+---
+
 ## 2026-11-06 — E6: hello-world assinado instalado, medido e removido
 
 - **Degrau:** 3. Rollback testado: sim (desinstalação executada e verificada).

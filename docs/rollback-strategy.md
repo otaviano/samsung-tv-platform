@@ -36,11 +36,17 @@ Todo experimento é registrado em [change-log.md](change-log.md) com:
 Antes de subir para o degrau 3:
 
 - [ ] Fotografar/registrar todas as telas de configuração relevantes da TV (estado original)
-- [ ] Registrar a string de firmware atual (`<TV_FIRMWARE>`) para detectar mudança
-- [ ] Registrar o inventário de apps instalados (via SDB, somente leitura)
-- [ ] Confirmar que **auto-update de firmware está desligado** — um update silencioso
+      — parcial: IP Settings e Atualização de Software (2026-11-06)
+- [x] Registrar a string de firmware atual (`<TV_FIRMWARE>`) para detectar mudança
+- [x] Registrar o inventário de apps instalados (via SDB, somente leitura)
+- [x] Confirmar que **auto-update de firmware está desligado** — um update silencioso
       invalida todas as conclusões do discovery
 - [ ] Documentar o caminho de factory reset (como último recurso conhecido, não como etapa)
+
+Status 2026-11-06: firmware (`device-baseline.md`), inventário de 309 apps (E4) e
+auto-update **desligado** (confirmado pelo usuário no menu Suporte → Atualização de
+Software; a versão exibida bate com `<TV_FIRMWARE>`). Pendentes: fotos completas e caminho
+de factory reset.
 
 ## Regra de ouro
 
