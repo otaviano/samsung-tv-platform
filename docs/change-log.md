@@ -132,6 +132,23 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-06 — tv-app v0.2: motor de foco direcional validado no device
+
+- **Degrau:** 3 (atualização do nosso app). Rollback: `tv-app.sh uninstall src/tv-app/dist`.
+- **O que entrou:** `src/focus/geometry.ts` (navegação espacial pura), `manager.ts`
+  (memória por grupo), ponte Preact, fileiras com rolagem por transform. 16 testes Vitest.
+- **Regras:** horizontal só na mesma linha (para na borda); vertical em duas fases
+  (linha mais próxima, depois alinhamento); memória por fileira tem precedência.
+- **Validação no device** (sequência de foco do report-sink cruzada com as regras):
+  borda horizontal, fileira curta, memória de grupo e teclas rápidas se comportaram como
+  especificado. Usuário: "bem bom".
+- **Achados:** (1) geometria entregue ao motor é lógica (`offsetLeft`, imune ao
+  transform em transição) — sem isso, cliques rápidos decidiriam com posições
+  intermediárias; (2) OK dispara a seleção, mas **sem feedback visual** — percebido como
+  "não fez nada". A resolver com ação real (abrir app).
+
+---
+
 ## 2026-11-06 — tv-app: esqueleto (ADR-0003) instalado no device
 
 - **Degrau:** 3. Rollback: `scripts/tv-app.sh uninstall src/tv-app/dist` (mesmo mecanismo

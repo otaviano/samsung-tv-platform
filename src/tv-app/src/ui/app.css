@@ -42,7 +42,7 @@ body {
 }
 
 .row {
-  margin-bottom: 48px;
+  margin-bottom: 24px;
 }
 
 .row__title {
@@ -52,8 +52,19 @@ body {
   color: var(--muted);
 }
 
-.row__items {
+.row__viewport {
+  position: relative;
+  /* respiro para o tile focado (scale + sombra) não ser cortado */
+  margin: -16px calc(-1 * var(--safe-x)) 0;
+  padding: 16px var(--safe-x) 24px;
+  overflow: hidden;
+}
+
+.row__track {
+  position: relative; /* offsetParent dos tiles: base da geometria lógica */
   display: flex;
+  transition: transform 160ms ease-out;
+  will-change: transform;
 }
 
 .tile {
@@ -65,5 +76,14 @@ body {
   margin-right: 24px;
   border-radius: 12px;
   background: var(--tile);
-  font-size: 48px;
+  flex: 0 0 auto;
+  font-size: 40px;
+  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+}
+
+/* Foco por classe: :focus-visible não existe no Chromium 69. */
+.tile.is-focused {
+  transform: scale(1.06);
+  background: #2a2d36;
+  box-shadow: 0 0 0 4px #e8e8ea;
 }
