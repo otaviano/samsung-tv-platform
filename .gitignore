@@ -1,0 +1,18 @@
+# Identificadores do device (serial, DUID/UDN, MAC, TVkey) — nunca versionar
+*.local.md
+*.local.json
+device.env
+scripts/.secret-values.local
+secrets/
+evidence/raw-*
+evidence/**/raw-*
+
+# Toolchain / build
+tizen-studio/
+tizen-studio-data/
+*.wgt
+.buildResult/
+node_modules/
+dist/
+bin/
+obj/

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Bloqueia o push se houver dado sensível no que está versionado.
+# Ativar neste clone:  git config core.hooksPath .githooks
+exec "$(git rev-parse --show-toplevel)/scripts/audit-secrets.sh"

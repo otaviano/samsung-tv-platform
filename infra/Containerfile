@@ -1,0 +1,89 @@
+# Toolchain Tizen para desenvolvimento Samsung TV, isolado do host Fedora.
+# Ver docs/decisions/0002-toolchain-tizen-em-container.md
+#
+# Build:  podman build -t tizen-tv:6.1 -f infra/Containerfile infra/
+# Uso:    scripts/tizen.sh <comando tizen|sdb>
+#
+# Fatos que moldaram este arquivo (verificados no próprio instalador, 2026-11-06):
+#  - O instalador ABORTA se executado como root  →  usuário não-root obrigatório.
+#  - O JDK vem EMBUTIDO (descompacta jdk/* em ~/.package-manager/jdk) a menos que
+#    se passe --use-system-java  →  não instalamos JDK aqui.
+#  - No Ubuntu o instalador só exige `grep` e `zip` como dependências.
+#  - Flags suportados (do arquivo HELP): --show-license --accept-license --no-java-check
+#  - O repo "Samsung Tizen TV SDK" JÁ VEM pré-registrado (extra index 3) e ativo; não é
+#    preciso `extra --add`. A Certificate Extension 2.0.75 também já vem (index 1).
+#  - As extensões são instaladas em BUILD TIME de propósito: scripts/tizen.sh roda
+#    containers --rm, então instalar em runtime jogaria o resultado fora.
+
+FROM docker.io/library/ubuntu:24.04
+
+ARG TIZEN_STUDIO_VERSION=6.1
+ARG INSTALLER=web-cli_Tizen_Studio_6.1_ubuntu-64.bin
+ARG INSTALLER_SHA256=7f33fe09eda4eb5d50463cf997e8f676d455060720470070ae1932994413aaf4
+ARG TIZEN_USER=tizen
+ARG TIZEN_UID=1000
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    TIZEN_HOME=/home/tizen/tizen-studio
+
+# `zip`/`grep` são o que o instalador checa. `cpio` + `rpm2cpio` são obrigatórios para
+# desempacotar as extensões da Samsung (distribuídas como RPM) — no Ubuntu 24.04
+# `rpm2cpio` é um pacote apt próprio. O resto é sdb/empacotamento e diagnóstico de rede.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates curl zip unzip \
+        cpio rpm2cpio \
+        libkf5itemmodels5 libkf5kiowidgets5 libkchart2 \
+        libncurses6 procps iproute2 iputils-ping net-tools \
+        python3-minimal git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ubuntu 24.04 já traz uid 1000 (ubuntu); removemos para fixar o nosso e
+# casar com o uid do host, evitando arquivos root em volumes montados.
+RUN userdel -r ubuntu 2>/dev/null || true; \
+    useradd -m -u ${TIZEN_UID} -s /bin/bash ${TIZEN_USER}
+
+USER ${TIZEN_USER}
+WORKDIR /home/${TIZEN_USER}
+
+RUN set -eux; \
+    curl -fsSL -o /tmp/tizen-installer.bin \
+      "https://download.tizen.org/sdk/Installer/tizen-studio_${TIZEN_STUDIO_VERSION}/${INSTALLER}"; \
+    echo "${INSTALLER_SHA256}  /tmp/tizen-installer.bin" | sha256sum -c -; \
+    chmod +x /tmp/tizen-installer.bin; \
+    /tmp/tizen-installer.bin --accept-license "${TIZEN_HOME}"; \
+    rm -f /tmp/tizen-installer.bin
+
+ENV PATH="${TIZEN_HOME}/tools/ide/bin:${TIZEN_HOME}/tools:${PATH}"
+
+# TV Extension + Certificate Extension.
+#
+# Deliberadamente SEM `TV-SAMSUNG-Public-Emulator`: o canal oficial só serve a extensão
+# 10.0, cujo emulador NÃO representa o Chromium M69 do device de 2020 — daria falso
+# positivo exatamente no que importa. Validação é no hardware real.
+# Ver docs/discovery-report.md, achado 3.4 e 1.2.
+# ATENÇÃO: o package-manager-cli retorna exit code 0 mesmo quando a instalação falha.
+# Por isso verificamos explicitamente que os pacotes saíram de "ni" (not installed) —
+# sem esse guard, um build quebrado passaria como verde.
+RUN set -eux; \
+    PM="${TIZEN_HOME}/package-manager/package-manager-cli.bin"; \
+    "$PM" extra -act 3; \
+    "$PM" install --accept-license --no-java-check \
+        TV-SAMSUNG-Public-WebAppDevelopment,TV-SAMSUNG-Extension-Tools,cert-add-on; \
+    "$PM" show-pkgs > /tmp/pkgs.txt; \
+    for p in TV-SAMSUNG-Public-WebAppDevelopment TV-SAMSUNG-Extension-Tools cert-add-on; do \
+        grep -qE "^i[[:space:]]+${p}[[:space:]]" /tmp/pkgs.txt \
+          || { echo "FALHA: ${p} nao foi instalado"; grep -E "${p}" /tmp/pkgs.txt; exit 1; }; \
+    done; \
+    rm -f /tmp/pkgs.txt; \
+    "$PM" show-info
+
+# Estado mutável que scripts/tizen.sh persiste em volume:
+#   tizen-studio-data  perfis de certificado e keystore
+#   .sdb               chaves do sdb
+VOLUME ["/home/tizen/tizen-studio-data", "/home/tizen/.sdb"]
+
+# sdb escuta aqui quando em modo servidor; o container roda com rede do host,
+# então o SDB alcança a TV na LAN sem NAT. Ver scripts/tizen.sh.
+EXPOSE 26099 26101
+
+CMD ["/bin/bash"]
