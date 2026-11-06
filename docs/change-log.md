@@ -107,10 +107,58 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
-## PENDENTE — E5: resolver DNS em modo log-only
+## 2026-11-06 — E5 (preparação): resolver log-only montado na estação; TV ainda não apontada
 
-Refazer informando `<HOST_IP>` em **Host PC IP**. Reconfirmar antes:
-`ip -4 -br addr show wlo1`. Toolchain (E3) já está pronto para validar.
+- **Degrau:** 1 (estação). O degrau 2 (DNS manual na TV) ainda não foi aplicado.
+- **Hipótese:** com a TV apontando para um forwarder transparente, o log revela o
+  conjunto de domínios da Samsung (ads, telemetria, ACR, update) sem alterar o
+  comportamento da TV.
+- **Passos exatos:** `scripts/dns-logonly.sh start`; teste
+  `dig @<HOST_IP> -p 5300 samsung.com`.
+- **Resultado observado:** dnsmasq 2.92 sem root em `<HOST_IP>:5300`, encaminhando para
+  `<GATEWAY_IP>`; query de teste respondida e logada em `evidence/raw-dns-<data>.log`
+  (gitignored). **Confirmado.**
+- **Achados da estação:** porta <1024 indisponível sem root
+  (`ip_unprivileged_port_start = 1024`); 53 fechada na zona `FedoraWorkstation`. Daí o
+  redirect 53→5300 por rich rule runtime, filtrada pela origem `<TV_IP>`.
+- **Correção:** a entrada "PENDENTE — E5" anterior tinha texto copiado do E2 (Host PC IP);
+  substituída por esta.
+- **Pendente (usuário):** `fw-up` (sudo) e DNS manual na TV. Runbook:
+  [runbooks/e5-dns-logonly.md](runbooks/e5-dns-logonly.md).
+- **Rollback:** TV → DNS automático; `fw-down`; `stop`. Testado antes? `stop`/`start`
+  sim; `fw-up`/`fw-down` não (exige sudo).
+- **Risco de recuperação:** baixo. Pior caso: estação offline deixa a TV sem DNS até
+  reverter no menu.
+
+---
+
+## 2026-11-06 — E5 (coleta iniciada): TV apontada para o resolver
+
+- **Degrau:** 2. `scripts/dns-logonly.sh fw-up` (2/2 regras ativas) e DNS manual na TV =
+  `<HOST_IP>`. Foto da tela de IP Settings original tirada antes.
+- **Resultado observado:** queries da TV chegando imediatamente — 180 nos primeiros
+  minutos. Redirect 53→5300 por rich rule local com filtro de origem: **Confirmado**.
+- **Primeira leitura (não é o mapa final):** domínios Samsung (`samsungqbe.com`,
+  `samsungcloudsolution.com`, `samsungcloudcdn.com`) e `adgrx.com` (`tvx.`, `rtb.`) já
+  aparecem, ao lado do tráfego dos apps (Netflix, YouTube, Disney/bamgrid). Atribuir
+  `adgrx.com` à Samsung Ads: **Hipótese**, a confirmar com fonte.
+- **Implicação parcial:** pelo menos parte da resolução respeita o DNS manual. Ainda não
+  descarta resolver hardcoded para outros serviços.
+- **Rollback:** TV → DNS automático; `fw-down`; `stop`.
+
+---
+
+## 2026-11-06 — Política: Developer Mode pode permanecer ligado
+
+- **Decisão do usuário:** removida a regra "desligar o Developer Mode ao fim da sessão"
+  (`security.md`, regra 2).
+- **Base:** E2 confirmou que o `developerIP` funciona como allowlist (conexões de outro IP
+  são fechadas em ~0,02 s sem handshake), e E4 confirmou sem root e sem shell.
+- **Risco residual aceito:** um host que assuma `<HOST_IP>` (lease liberado, outro device
+  ou spoofing) obtém acesso SDB — instalar/remover apps de terceiros. Superfície do
+  próprio `sdbd` exposta na LAN. Ambos **Prováveis**, não testados.
+- **Mantido:** `developerIP` fixado na estação com lease reservado (E1); 26101 nunca fora
+  da LAN (regra 1).
 
 ---
 

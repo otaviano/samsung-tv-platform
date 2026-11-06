@@ -184,8 +184,8 @@ Resultado completo do E4 em [e4-sdb-readonly.md](e4-sdb-readonly.md).
 # esperado: developerMode "0", developerIP "0.0.0.0", porta 26101 fechada
 ```
 
-Desligue o Developer Mode ao fim de cada sessão de desenvolvimento — ele mantém a 26101
-aberta no LAN sem autenticação forte. Ver `docs/security.md`.
+O Developer Mode pode ficar ligado entre sessões, desde que o `developerIP` aponte para a
+estação com lease reservado. Ver `docs/security.md`, regra 2.
 
 ## Registrar
 

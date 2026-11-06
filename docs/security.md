@@ -50,8 +50,9 @@ consegue identificar e, com pareamento, controlar a TV.
 
 1. **SDB (26101) e portas de debug nunca** acessíveis fora do LAN. Sem port forward,
    sem UPnP-IGD, sem DMZ.
-2. Developer Mode fica ligado **apenas durante** sessões de desenvolvimento, e com
-   `developerIP` fixado na estação. Desligar ao terminar.
+2. Developer Mode pode permanecer ligado entre sessões (risco aceito pelo usuário em
+   2026-11-06 — ver `change-log.md`). Requisito que se mantém: `developerIP` fixado na
+   estação, cujo lease é reservado (E1) — é ele que restringe o SDB a um único host.
 3. A API do control plane (Hostinger VPC) fala **somente HTTPS**, com autenticação. Ela
    nunca recebe acesso direto ao device.
 4. O caminho remoto para a TV, se necessário, é **Tailscale** (já ativo na estação) — não

@@ -18,12 +18,13 @@ Projeto de engenharia/reverse-engineering — não é um exercício de ajuste de
 ## Estado atual
 
 **Milestone 1 — Technical Discovery: em andamento.**
-Inventário da estação e identificação do device concluídos. Veja
-[docs/discovery-report.md](docs/discovery-report.md).
+E1–E4 concluídos: SDB conectado, Tizen 5.5 / armv7 confirmados, **sem root e sem shell**
+— o objetivo 1 passa a depender de controle de rede. Veja
+[docs/discovery-report.md](docs/discovery-report.md) e
+[docs/runbooks/e4-sdb-readonly.md](docs/runbooks/e4-sdb-readonly.md).
 
-Bloqueio ativo: Developer Mode está desligado na TV e exige interação física com o
-controle remoto — ver [docs/runbooks/e2-developer-mode.md](docs/runbooks/e2-developer-mode.md).
-Nada de SDB até lá.
+Em andamento: **E5**, resolver DNS log-only (`scripts/dns-logonly.sh`) —
+[docs/runbooks/e5-dns-logonly.md](docs/runbooks/e5-dns-logonly.md).
 
 Toolchain (E3): `infra/Containerfile` + `scripts/tizen.sh`.
 
