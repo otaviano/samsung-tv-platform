@@ -26,12 +26,30 @@
 | Serial | **REDIGIDO** (exposto sem auth via UPnP — ver security.md) | UPnP `serialNumber` |
 | DUID / UDN | **REDIGIDO** (UUIDs estáveis, identificam o device) | `:8001/api/v2/`, UPnP |
 
+## Confirmado via SDB (`sdb capability`, 2026-11-06)
+
+| Campo | Valor | Impacto |
+| --- | --- | --- |
+| `platform_version` | **`5.5`** | **Tizen 5.5 confirmado do device.** Fecha a incógnita 1. |
+| `cpu_arch` | **`armv7`** | ARM 32-bit, não x86. Relevante para qualquer código nativo. |
+| `profile_name` | `tv` | |
+| `can_launch` | `tv-samsung` | |
+| `product_version` | `4.0` | versão do produto Samsung, distinta da plataforma |
+| `sdbd_version` | `2.2.31` (plugin `3.8.0_TV_REL`) | |
+| `sdbd_rootperm` | **`disabled`** | **SDB não dá root.** |
+| `rootonoff_support` | **`disabled`** | root **não é alternável**. |
+| `intershell_support` | **`disabled`** | **sem shell arbitrário.** `sdb shell <cmd>` não executa. |
+| `appcmd_support` | `disabled` | |
+| `pkgcmd_debugmode` | `enabled` | instalação de pacote em modo debug permitida |
+| `filesync_support` | `pushpull` | `sdb push`/`pull` disponíveis |
+| `secure_protocol` | `enabled` | |
+| `multiuser_support` | `enabled` | apps do usuário sob uid 5001 |
+
 ## Não confirmado pelo device
 
-- **Versão exata do Tizen.** `<TV_FIRMWARE>` é a string de firmware da Samsung e
-  **não** carrega a versão do Tizen. O device expõe apenas `Y2020`. A versão precisa ser
-  lida de dentro de um app (`tizen.systeminfo` / user agent) ou do SDB, nenhum dos dois
-  disponível hoje.
+- ~~Versão exata do Tizen.~~ **Resolvida via SDB: `platform_version:5.5`.** A inferência
+  pelo ano de modelo estava correta, mas só agora é fato lido do device. A string de
+  firmware `<TV_FIRMWARE>` segue sem carregar a versão do Tizen — isso não mudou.
 - `firmwareVersion` retorna literalmente `Unknown` no endpoint REST.
 - `version: "2.0.25"` em `/api/v2/` é a versão da **API de controle remoto**, não do Tizen.
   Não confundir.

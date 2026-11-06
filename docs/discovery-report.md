@@ -157,8 +157,16 @@ critério é `developerIP` == IP da estação. O runbook foi corrigido para veri
 Consequência de projeto: o IP da estação é **parte da configuração do device**. Lease DHCP
 fixo para a estação não é higiene opcional — é pré-requisito funcional. Já incorporado em E1.
 
-Confiança: **Confirmado** quanto ao mecanismo de rejeição. Permanece Provável que o campo
-aceite qualquer IP válido da LAN — a confirmar quando o `developerIP` correto for gravado.
+**Confirmado em 2026-11-06.** Com `developerIP` corrigido para o IP da estação, o
+comportamento do socket inverteu na hora: de *fecha em 0,02 s* para *mantida aberta
+aguardando handshake*. `sdb connect` passou, e `sdb devices` lista o device.
+
+Dois detalhes operacionais que valem registro:
+
+- **Não foi preciso rebootar** após corrigir o `developerIP`. O daemon aplicou
+  imediatamente. O reboot só foi necessário na habilitação inicial do Developer Mode.
+- O campo **Host PC IP** não gravou nas duas primeiras tentativas. A terceira, apagando o
+  conteúdo anterior antes de digitar, funcionou.
 
 ### Achado 3.1 — Developer Mode está DESLIGADO (estado inicial, 2026-11-06)
 
@@ -227,17 +235,60 @@ conclusão sobre playback a partir disso. Irrelevante para o escopo atual (home 
 | --- | --- |
 | Tizen ≠ Android; APK/launcher Android não se aplicam | **Confirmado** — `OS: Tizen`, `Y2020` |
 | App custom não substitui o Smart Hub nem suprime ads fora da própria UI | **Provável** — nenhuma API pública de substituição de home existe na doc Samsung TV; a confirmar com a doc de TV Extension 5.5 |
-| Ocultar app no launcher ≠ desinstalar/desabilitar app de sistema | **Provável** — pendente de inventário via SDB |
-| Controle de background/serviços pode ser restrito | **Hipótese** — não testável sem SDB |
-| SDB não dá root | **Hipótese** — não testado; não projetar contando com root |
+| Ocultar app no launcher ≠ desinstalar/desabilitar app de sistema | **Confirmado** — 309 apps inventariados; sem root não há como desabilitá-los |
+| SDB não dá root | **Confirmado** — `sdbd_rootperm:disabled`, `rootonoff_support:disabled` |
+| Controle de background/serviços restrito | **Confirmado** — sem root e sem shell (`intershell_support:disabled`) |
 
 ---
 
+## 4b. Achado 3.5 — o que o SDB permite, e o que não (2026-11-06)
+
+`sdb capability`, com SDB finalmente conectado. **Isto redefine o escopo viável do projeto.**
+
+| Capability | Valor | Consequência |
+| --- | --- | --- |
+| `platform_version` | `5.5` | Tizen 5.5 **confirmado do device** |
+| `cpu_arch` | `armv7` | ARM 32-bit |
+| `sdbd_rootperm` | **disabled** | **sem root** |
+| `rootonoff_support` | **disabled** | root **não é alternável** |
+| `intershell_support` | **disabled** | **sem shell arbitrário** |
+| `filesync_support` | pushpull | push/pull de arquivos ok |
+| `pkgcmd_debugmode` | enabled | instalar/remover app próprio ok |
+
+### Sem shell: o que funciona no lugar
+
+`sdb shell "cat /etc/info.ini"` e `sdb shell "ls /usr/apps"` **retornam vazio** — não há
+shell. O runbook foi corrigido; sugeri esses comandos antes de ter o device na mão.
+
+O que funciona são os comandos embutidos do `sdbd`:
+
+```bash
+./scripts/tizen.sh sdb shell 0 applist   # inventário de apps
+```
+
+Inventário coletado: **309 apps** — 134 `org.tizen.*`, 130 `com.samsung.*`, ~30 de
+terceiros, 44 com "service" no nome. Bruto em `evidence/raw-applist-*.txt` (gitignored).
+
+### Impacto nos objetivos do projeto
+
+| Objetivo | Viabilidade após este achado |
+| --- | --- |
+| 1. Reduzir ads/telemetria/background | **Reduzido.** Sem root e sem shell, desabilitar serviços de sistema está fora de alcance em firmware de varejo. O lever real passa a ser **controle de rede (DNS)**, não o device. |
+| 2. Home custom minimalista | **Inalterado.** App Tizen próprio, instalável via `pkgcmd_debugmode`. |
+| 3. Ocultar apps | **Parcialmente.** Ocultar na *nossa* UI: sim. Desinstalar/desabilitar app de sistema Samsung: **não**, sem root. |
+| 4. Agente de recomendação | **Inalterado.** Fora do device. |
+
+Isto **confirma** a restrição que o handoff listava como hipótese ("SDB não dá root") e
+rebaixa a expectativa do objetivo 1. Honestidade sobre isso agora evita semanas gastas
+tentando desabilitar serviços que o firmware não permite desabilitar.
+
 ## 5. Incógnitas abertas
 
-1. Versão exata do Tizen **lida do device** (hoje só inferida do ano de modelo).
-2. Developer Mode é habilitável neste firmware `<TV_FIRMWARE>`? Qual é a sequência no
-   menu deste modelo?
+1. ~~Versão exata do Tizen lida do device.~~ **Resolvida: `platform_version:5.5`.**
+2. ~~Developer Mode é habilitável neste firmware?~~ **Resolvida: sim**, pelo painel Apps
+   com a sequência `12345`. O campo **Host PC IP** é o ponto crítico, e **não é preciso
+   rebootar** após corrigi-lo — o daemon aplica na hora (só a habilitação inicial pediu
+   reboot).
 3. ~~Tizen Studio 6.1 ainda entrega TV Extension compatível com plataforma 5.5?~~ **Resolvida** — só 10.0; sem emulador fiel ao M69 (achado 1.2).
 4. Tizen Studio funciona em container Ubuntu sob podman no Fedora 44, com SDB alcançando a LAN?
 5. A TV respeita o DNS entregue por DHCP, ou tem fallback hardcoded?

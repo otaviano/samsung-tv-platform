@@ -87,7 +87,27 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
-## PENDENTE — E2 (tentativa 3)
+## 2026-11-06 — E2 (tentativa 3): SUCESSO + E4 executado
+
+- **O que destravou:** apagar o conteúdo do campo **Host PC IP** antes de digitar.
+  Sobrescrever por cima não gravava. `developerIP` passou a refletir a estação.
+- **Sem reboot:** o daemon aplicou o novo `developerIP` imediatamente. Socket mudou de
+  "fecha em 0,02 s" para "mantida aberta". `sdb connect` passou; `sdb devices` lista a TV.
+- **Hipótese do `developerIP` como allowlist: Confirmada.**
+- **E4 (somente leitura) na sequência:** `platform_version:5.5` confirmado do device
+  (incógnita 1 fechada), `cpu_arch:armv7`, **`sdbd_rootperm:disabled`**,
+  **`rootonoff_support:disabled`**, **`intershell_support:disabled`**. 309 apps
+  inventariados via `sdb shell 0 applist`.
+- **Correção de documentação:** os comandos E4 que eu havia sugerido
+  (`sdb shell cat /etc/info.ini`, `ls /usr/apps`) **não funcionam** — não há shell.
+- **Impacto de escopo:** sem root e sem shell, desabilitar serviços/apps de sistema está
+  fora de alcance. Objetivo 1 passa a depender de controle de rede, não do device.
+- **Rollback:** Developer Mode segue ligado. Desligar ao fim da sessão.
+- **Registro:** [runbooks/e4-sdb-readonly.md](runbooks/e4-sdb-readonly.md)
+
+---
+
+## PENDENTE — E5: resolver DNS em modo log-only
 
 Refazer informando `<HOST_IP>` em **Host PC IP**. Reconfirmar antes:
 `ip -4 -br addr show wlo1`. Toolchain (E3) já está pronto para validar.

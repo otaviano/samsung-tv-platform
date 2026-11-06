@@ -1,5 +1,11 @@
 # Architecture
 
+> **Atualização 2026-11-06 (E4).** O device confirmou **Tizen 5.5**, **armv7**, e —
+> decisivo — **sem root** (`sdbd_rootperm:disabled`) e **sem shell**
+> (`intershell_support:disabled`). Desabilitar serviços ou apps de sistema Samsung está
+> **fora de alcance** neste firmware. O objetivo de reduzir ads/telemetria depende agora
+> de **controle de rede**, não do device. Ver `docs/runbooks/e4-sdb-readonly.md`.
+
 **Status: direção de trabalho, não capacidades confirmadas.** Revisar após E2–E4 do
 discovery. Fatos confirmados estão em [device-baseline.md](device-baseline.md).
 
@@ -69,7 +75,7 @@ compartilhado real ou o agente entrar. Decidir via ADR quando o gatilho acontece
 Serviço separado, fase posterior. Acesso **explícito e escopado** aos dados de preferência.
 Nunca credenciais do device. Introduzir só quando o runtime e a API estiverem estáveis.
 
-## Network controls — `infra`
+## Network controls — `infra`  ← principal lever do objetivo 1
 
 O LAN resolve DNS pelo roteador `<GATEWAY_IP>`. Plano: resolver próprio anunciado por DHCP,
 **começando em modo log-only** para mapear os domínios que a TV contata antes de bloquear

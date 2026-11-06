@@ -151,12 +151,26 @@ falta o teste decisivo com o valor correto gravado.
 `sdb capability` é o comando que finalmente responde a **incógnita 1** — a versão real do
 Tizen, lida do device em vez de inferida pelo ano do modelo.
 
-Primeiros comandos somente-leitura sugeridos (E4):
+> ⚠️ **Não existe shell neste device.** `intershell_support:disabled` — `sdb shell "<cmd>"`
+> retorna vazio. Os comandos `cat /etc/info.ini` e `ls /usr/apps` que esta seção sugeria
+> antes **não funcionam**; foram sugeridos sem o device em mãos.
+
+Use os comandos embutidos do `sdbd`:
 
 ```bash
-./scripts/tizen.sh sdb shell cat /etc/info.ini      # build/versão de plataforma
-./scripts/tizen.sh sdb shell "ls /usr/apps"         # inventário de apps instalados
+./scripts/tizen.sh sdb shell 0 applist   # inventário de apps (309 neste device)
 ```
+
+Resultado completo do E4 em [e4-sdb-readonly.md](e4-sdb-readonly.md).
+
+## Lições das três tentativas (2026-11-06)
+
+1. **O campo Host PC IP não grava se você escrever por cima.** Funcionou apagando o
+   conteúdo anterior antes de digitar.
+2. **Corrigir o `developerIP` não exige reboot.** O daemon aplica na hora. Só a habilitação
+   inicial do Developer Mode pediu reboot.
+3. **"Porta 26101 aberta" nunca foi critério de sucesso** — com o IP errado ela abre e
+   rejeita. O critério é o `developerIP` correto, ou direto o `sdb devices`.
 
 ## Rollback
 
