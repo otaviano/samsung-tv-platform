@@ -132,6 +132,31 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-07 — E9 (standby longo): processo sobrevive à noite e volta ao ligar
+
+- **Degrau:** 3 (app próprio instalado; nada no sistema).
+- **Hipótese:** em standby longo o Tizen mantém o processo do E8 congelado (como nos 98 s),
+  em vez de encerrá-lo.
+- **Passos exatos:** E8 (`E8BgTest01`) em background; TV desligada pelo controle às
+  ~23:31 de 06/11; ligada às ~08:47 de 07/11. Coleta via `report-sink.py`
+  (`evidence/raw-tv-report-20261106.log`).
+- **Resultado observado:**
+  - Último evento antes do standby 23:30:57; primeiro depois 08:47:32 → `/e9/wake
+    "gap de 33384 s"` (9 h 16 min). Mesmo processo (sem `/e8/boot` antes do wake):
+    **congelado, não encerrado** — Confirmado (1 amostra).
+  - `/e8/front` pedido 08:47:36, `ok` 08:47:39, `visibility hidden:false` 08:47:39.
+  - `online` **não** disparou desta vez (no standby de 98 s disparou). O gap de relógio
+    é o sinal confiável; `online` fica como redundante.
+  - No power-on sobem de novo `samsung-analytics`, `built-in-app-upgrader`,
+    `samsung-service-manager`, `AirPlayWebApp`.
+  - Durante o dia, com a TV ligada, o polling mostra serviços de terceiros (Spotify,
+    Disney+, Prime companion, TV Plus deeplinker) subindo em ciclos de ~9 min — insumo
+    para o E5.
+- **Não medido:** tempo do botão até a home (só do wake). Pendente: boot frio.
+- **Rollback:** `scripts/tv-app.sh uninstall experiments/e8-background`.
+
+---
+
 ## 2026-11-06 — E8/E9: voltar para a home — captura impossível, power-on funciona
 
 - **Degrau:** 3 (app de experimento `E8BgTest01`). Runbook:

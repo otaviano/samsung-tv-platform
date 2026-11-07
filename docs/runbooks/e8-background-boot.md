@@ -20,6 +20,7 @@
 | …mas apps fecham ao sair? | **Às vezes.** Netflix nunca (suspende); HBO Max depende de onde se sai | Confirmado |
 | `tizen.power` | **Não existe** no perfil TV | Confirmado |
 | **Power-on (standby curto, 98 s) traz a nossa home?** | **Sim.** Processo **congela** no standby; ao ligar, `online` + salto de relógio (gap) disparam `launch(self)`; ~4 s após ligar | Confirmado (1 amostra) |
+| **Power-on após standby longo (9 h 16 min) traz a nossa home?** | **Sim.** Processo continuou congelado, não foi encerrado. Só o gap disparou (`online` **não** veio). Wake → `launch` pedido em 3,8 s → frente em 7,2 s (medido do wake, não do botão) | Confirmado (1 amostra, 2026-11-07) |
 
 ## Mecanismo de power-on
 
@@ -27,10 +28,10 @@
 2. Tique de 1 s; se o intervalo real > 10 s, o processo esteve congelado → TV acabou de
    ligar. Evento `online` é sinal redundante.
 3. Após 1,5 s (deixa o "último app" subir), `tizen.application.launch(self)`.
+   O gap é o sinal **primário**: no standby longo o `online` não disparou.
 
 ## Pendente
 
-- **Standby longo** (noite inteira): o processo continua congelado ou é encerrado?
 - **Boot frio** (tomada): não há processo nosso; depende de "Executar automaticamente o
   último app" (existe no menu, confirmado pelo usuário) e de a nossa home ser a última.
 - Atraso de 1,5 s: ajustar para minimizar o flash do app anterior.
