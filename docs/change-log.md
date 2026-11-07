@@ -132,6 +132,21 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-07 — E9 (boot frio, tentativa 1): abriu no Smart Hub — inconclusivo
+
+- **Passos:** TV tirada da tomada ~12:24 e religada.
+- **Observado:** a TV subiu no Smart Hub. Último heartbeat do E8 12:24:35; nenhum
+  `/e8/boot` depois → no boot frio o app em background **não** é reiniciado
+  (Confirmado, 1 amostra).
+- **Por que inconclusivo:** o log mostra o E8 em background (`hidden:true`) desde
+  08:48:52 até o desligamento — ele **não** era o app em primeiro plano. O teste de
+  "Executar automaticamente o último app" exige o E8 na frente no momento do corte, e
+  o estado da opção no menu não foi registrado.
+- **Achado E5:** logo após religar, a TV resolve `log-ingestion-sa.samsungacr.com`
+  (ACR — Automatic Content Recognition, pelo nome: **Provável**).
+
+---
+
 ## 2026-11-07 — E9 (standby longo): processo sobrevive à noite e volta ao ligar
 
 - **Degrau:** 3 (app próprio instalado; nada no sistema).
