@@ -30,10 +30,16 @@
 3. Após 1,5 s (deixa o "último app" subir), `tizen.application.launch(self)`.
    O gap é o sinal **primário**: no standby longo o `online` não disparou.
 
+## Boot frio (tomada) — sem solução conhecida
+
+- App em background **não** é reiniciado após corte de energia (Confirmado).
+- "Executar automaticamente o último app" **não** se aplica ao boot frio: com a opção
+  ligada e o YouTube na frente, a TV voltou no Smart Hub, 2/2 (Confirmado, 2026-11-07).
+- Serviço on-boot abre a UI congelada (ver Resultados).
+- Limite aceito: após queda de energia, abrir a home uma vez pela barra de apps.
+
 ## Pendente
 
-- **Boot frio** (tomada): não há processo nosso; depende de "Executar automaticamente o
-  último app" (existe no menu, confirmado pelo usuário) e de a nossa home ser a última.
 - Atraso de 1,5 s: ajustar para minimizar o flash do app anterior.
 
 ## Observação para o E5

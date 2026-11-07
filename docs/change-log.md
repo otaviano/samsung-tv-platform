@@ -132,6 +132,22 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-07 — E9 (boot frio, tentativa 2): "último app" não vale após corte de energia
+
+- **Configuração (conferida pelo usuário):** "Executar automaticamente o último app"
+  **ligado**; abertura automática do Smart Hub e do Samsung TV Plus **desligadas**.
+- **Passos:** YouTube em primeiro plano; TV fora da tomada ~30 s; religada.
+- **Observado:** subiu no Smart Hub, não no YouTube — igual à tentativa 1.
+- **Conclusão:** a opção "último app" **não se aplica ao boot frio** (Confirmado, 2
+  amostras, com app de terceiro). Não há caminho conhecido para a nossa home abrir
+  sozinha após queda de energia: app em background não é reiniciado (tentativa 1) e o
+  serviço on-boot abre a UI congelada (E8).
+- **Consequência aceita como limite atual:** após corte de energia, a home precisa ser
+  aberta uma vez pela barra de apps; a partir daí o mecanismo de power-on cobre o
+  standby (que sobreviveu a 9 h 16 min).
+
+---
+
 ## 2026-11-07 — E9 (boot frio, tentativa 1): abriu no Smart Hub — inconclusivo
 
 - **Passos:** TV tirada da tomada ~12:24 e religada.
