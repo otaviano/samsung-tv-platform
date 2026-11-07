@@ -142,6 +142,9 @@ Entradas em ordem cronológica inversa (mais recente no topo).
   08:48:52 até o desligamento — ele **não** era o app em primeiro plano. O teste de
   "Executar automaticamente o último app" exige o E8 na frente no momento do corte, e
   o estado da opção no menu não foi registrado.
+- **Complemento (usuário):** no corte o app na frente era o **YouTube**, e a TV voltou no
+  Smart Hub, não no YouTube. Ou a opção "último app" estava desligada, ou ela **não se
+  aplica após corte de energia** — a distinguir na tentativa 2 (opção conferida ligada).
 - **Achado E5:** logo após religar, a TV resolve `log-ingestion-sa.samsungacr.com`
   (ACR — Automatic Content Recognition, pelo nome: **Provável**).
 
