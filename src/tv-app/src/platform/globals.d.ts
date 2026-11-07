@@ -37,8 +37,15 @@ interface Tizen {
     getAppsContext(ok: (ctxs: TizenAppContext[]) => void, err?: (e: TizenWebAPIError) => void): void;
   };
 }
+interface SamsungNetwork {
+  getActiveConnectionType(): number;
+  isConnectedToGateway(): boolean;
+  getWiFiSsid(): string;
+  getWiFiSignalStrengthLevel(): number;
+}
 interface Window {
   tizen?: Tizen;
+  webapis?: { network?: SamsungNetwork };
 }
 
 // Imports de CSS são resolvidos pelo esbuild (gera dist/app.css).

@@ -132,6 +132,19 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-07 — tv-app v0.5: layout, barra de status, Sistema e organização de apps
+
+- **Degrau:** 3. Rollback: reinstalar v0.4 (`git checkout` + build) ou desinstalar.
+- **Mudanças:** placeholders removidos; barra superior com relógio/data (formatação
+  pt-BR manual) e rede (SSID, sinal, "sem internet") via `webapis.network` (privilégio
+  `network.public`); fileira Sistema (Fontes, Configurações — ids do E10 — e Organizar
+  apps); modo de organização (OK → Mover / Ocultar / Cancelar; ◀▶ move; BACK conclui),
+  persistido em `home.appPrefs.v1`; monograma colorido para apps sem ícone; ícones SVG
+  próprios. E10 desinstalado.
+- **Validação no device:** pendente (avaliação visual do usuário).
+
+---
+
 ## 2026-11-07 — E10: sonda de sistema (rede, fontes, apps de sistema)
 
 - **Degrau:** 3. App `E10SysProb`; rollback `tv-app.sh uninstall experiments/e10-system`.

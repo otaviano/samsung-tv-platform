@@ -1,28 +1,24 @@
 import './app.css';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'preact/hooks';
 import { FocusRoot, useFocusApi } from '../focus/FocusRoot';
 import { Row, type TileData } from './Row';
+import { StatusBar } from './StatusBar';
+import { ActionMenu, type MenuOption } from './ActionMenu';
+import { IconArrange, IconSettings, IconSources } from './icons';
 import { report } from '../platform/report';
 import { SELF_ID, launchApp, listApps, type InstalledApp } from '../platform/apps';
+import { SYSTEM_APPS } from '../platform/system';
+import { Key } from '../platform/keys';
 import { curate } from '../data/curate';
 import { loadCachedApps, saveCachedApps } from '../data/appsCache';
 import { loadFocus, saveFocus } from '../data/focusMemory';
+import { arrange, loadPrefs, move, savePrefs, toggleHidden, type AppPrefs } from '../data/appPrefs';
 import type { Background } from '../lifecycle/background';
 
-// Fileiras de exemplo, ainda sem fonte de dados (control plane/agente, fases seguintes).
-function tiles(prefix: string, n: number): TileData[] {
-  return Array.from({ length: n }, (_, i) => ({ id: `${prefix}-${i}`, label: `${prefix.toUpperCase()} ${i + 1}` }));
-}
-const PLACEHOLDER_ROWS = [
-  { id: 'cont', title: 'Continuar (exemplo)', items: tiles('cont', 3) },
-  { id: 'rec', title: 'Para você (exemplo)', items: tiles('rec', 7) },
-];
-
-const toTiles = (apps: InstalledApp[]): TileData[] =>
-  apps.map((a) => ({ id: a.id, label: a.name, icon: a.iconPath || undefined }));
+const ARRANGE_ID = 'sys.arrange';
 
 /** Cache primeiro; getAppsInfo (lento, ~3 s) atualiza em segundo plano. */
-function useApps(): { items: TileData[] | null; error: string | null } {
+function useApps(): { apps: InstalledApp[] | null; error: string | null } {
   const [apps, setApps] = useState<InstalledApp[] | null>(() => loadCachedApps());
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -39,25 +35,52 @@ function useApps(): { items: TileData[] | null; error: string | null } {
         setError(e.message);
       });
   }, []);
-  return { items: apps ? toTiles(apps) : null, error };
+  return { apps, error };
 }
 
-function open(bg: Background, item: TileData) {
+function open(bg: Background | null, id: string) {
   const t0 = performance.now();
-  report('/select', { id: item.id });
-  bg.watchLaunch(item.id);
-  launchApp(item.id)
-    .then(() => report('/launch', { id: item.id, ok: true, ms: Math.round(performance.now() - t0) }))
+  report('/select', { id });
+  if (bg) bg.watchLaunch(id);
+  launchApp(id)
+    .then(() => report('/launch', { id, ok: true, ms: Math.round(performance.now() - t0) }))
     .catch((e: Error) => {
-      bg.cancelWatch();
-      report('/launch', { id: item.id, ok: false, error: e.message });
+      if (bg) bg.cancelWatch();
+      report('/launch', { id, ok: false, error: e.message });
     });
 }
 
+const SYSTEM_TILES: TileData[] = [
+  { id: SYSTEM_APPS.sources, label: 'Fontes', glyph: IconSources },
+  { id: SYSTEM_APPS.settings, label: 'Configurações', glyph: IconSettings },
+  { id: ARRANGE_ID, label: 'Organizar apps', glyph: IconArrange },
+];
+
+const toTile = (a: InstalledApp, prefs: AppPrefs, moving: string | null): TileData => ({
+  id: a.id,
+  label: a.name,
+  icon: a.iconPath || undefined,
+  dimmed: prefs.hidden.indexOf(a.id) !== -1,
+  moving: a.id === moving,
+});
+
 function Home({ bg }: { bg: Background }) {
   const { fm } = useFocusApi();
-  const { items, error } = useApps();
-  const firstApp = items?.[0]?.id;
+  const { apps, error } = useApps();
+  const [prefs, setPrefsState] = useState<AppPrefs>(loadPrefs);
+  const [editing, setEditing] = useState(false);
+  const [menuFor, setMenuFor] = useState<InstalledApp | null>(null);
+  const [moving, setMoving] = useState<string | null>(null);
+
+  const setPrefs = (p: AppPrefs) => {
+    savePrefs(p);
+    setPrefsState(p);
+    report('/prefs', { order: p.order.length, hidden: p.hidden });
+  };
+
+  const shown = useMemo(() => (apps ? arrange(apps, prefs, editing) : []), [apps, prefs, editing]);
+  const tiles = shown.map((a) => toTile(a, prefs, moving));
+  const firstApp = shown[0]?.id;
 
   // Cada volta à frente recarrega a página: restaurar o último foco se ele ainda existe;
   // senão o primeiro app (que pode chegar depois do primeiro render).
@@ -68,19 +91,80 @@ function Home({ bg }: { bg: Background }) {
     else if (firstApp) fm.focus(firstApp);
   }, [firstApp]);
 
+  // Modo mover: ◀▶ trocam de posição; OK/BACK concluem. Captura em window (antes do
+  // FocusRoot e do BACK global, ambos em document).
+  useEffect(() => {
+    if (!moving) return;
+    const onKey = (e: KeyboardEvent) => {
+      const k = e.keyCode;
+      if (k !== Key.Left && k !== Key.Right && k !== Key.Enter && k !== Key.Back && k !== Key.Up && k !== Key.Down) return;
+      e.stopPropagation();
+      e.preventDefault();
+      if (k === Key.Left || k === Key.Right) {
+        setPrefs(move(prefs, shown.map((a) => a.id), moving, k === Key.Left ? -1 : 1));
+      } else if (k === Key.Enter || k === Key.Back) {
+        setMoving(null);
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [moving, prefs, shown]);
+
+  // BACK no modo de organização sai do modo (não esconde a home).
+  useEffect(() => {
+    if (!editing || moving || menuFor) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.keyCode !== Key.Back) return;
+      e.stopPropagation();
+      e.preventDefault();
+      setEditing(false);
+      fm.focus(ARRANGE_ID);
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [editing, moving, menuFor]);
+
+  const onApp = (t: TileData) => {
+    if (!editing) return open(bg, t.id);
+    const a = shown.find((x) => x.id === t.id);
+    if (a) setMenuFor(a);
+  };
+
+  const onSystem = (t: TileData) => {
+    if (t.id === ARRANGE_ID) {
+      setEditing(true);
+      report('/arrange', { on: true });
+      if (firstApp) fm.focus(firstApp);
+      return;
+    }
+    // Configurações/Fontes abrem POR CIMA da home (E10): nada a observar.
+    open(null, t.id);
+  };
+
+  const menuOptions: MenuOption[] = menuFor
+    ? [
+        { label: 'Mover', run: () => { setMoving(menuFor.id); setMenuFor(null); } },
+        {
+          label: prefs.hidden.indexOf(menuFor.id) === -1 ? 'Ocultar da home' : 'Mostrar na home',
+          run: () => { setPrefs(toggleHidden(prefs, menuFor.id)); setMenuFor(null); },
+        },
+        { label: 'Cancelar', run: () => setMenuFor(null) },
+      ]
+    : [];
+
   return (
-    <main class="home">
-      <header class="home__header">
-        <h1>Home</h1>
-        <span class="home__tag">
-          v0.4{__DEV__ ? ' · dev' : ''}
-          {error ? ` · erro ao listar apps: ${error}` : ''}
-        </span>
-      </header>
-      {items && items.length > 0 ? <Row id="apps" title="Apps" items={items} onSelect={(it) => open(bg, it)} /> : null}
-      {PLACEHOLDER_ROWS.map((r) => (
-        <Row key={r.id} id={r.id} title={r.title} items={r.items} onSelect={(it) => report('/select', { id: it.id })} />
-      ))}
+    <main class={'home' + (editing ? ' is-editing' : '')}>
+      <StatusBar />
+      {editing ? (
+        <div class="hint">
+          Organizando apps · <b>OK</b> opções do app · <b>BACK</b> concluir
+        </div>
+      ) : null}
+      {tiles.length > 0 ? <Row id="apps" title="Apps" items={tiles} onSelect={onApp} /> : null}
+      {!editing ? <Row id="system" title="Sistema" items={SYSTEM_TILES} onSelect={onSystem} /> : null}
+      {error ? <div class="error">Não foi possível listar os apps: {error}</div> : null}
+      {__DEV__ ? <div class="devtag">v0.5 · dev</div> : null}
+      {menuFor ? <ActionMenu title={menuFor.name} options={menuOptions} onClose={() => setMenuFor(null)} /> : null}
     </main>
   );
 }

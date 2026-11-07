@@ -1,10 +1,15 @@
 /* Canvas fixo 1920x1080, dpr 1 (medido no device, E6).
-   Sem `gap` em flexbox e sem :focus-visible no Chromium 69 — o stylelint barra. */
+   Sem `gap` em flexbox, sem :focus-visible e sem aspect-ratio no Chromium 69. */
 :root {
-  --bg: #0e0f12;
-  --fg: #e8e8ea;
-  --muted: #8a8d96;
-  --tile: #1c1e24;
+  --bg: #0b0c10;
+  --bg-2: #151821;
+  --fg: #f1f2f4;
+  --muted: #8b90a0;
+  --faint: #4a4f5c;
+  --card: #1b1e27;
+  --card-focus: #262a36;
+  --accent: #f1f2f4;
+  --warn: #f0b04a;
   --safe-x: 96px; /* margem de segurança contra overscan */
   --safe-y: 54px;
 }
@@ -17,98 +22,259 @@ body {
   overflow: hidden;
   background: var(--bg);
   color: var(--fg);
-  font-family: sans-serif;
+  font-family: 'SamsungOne', 'Samsung Sans', sans-serif;
 }
 
 .home {
+  position: relative;
+  height: 1080px;
+  box-sizing: border-box;
   padding: var(--safe-y) var(--safe-x);
+  background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 55%);
 }
 
-.home__header {
+/* ---- barra superior ---- */
+.status {
   display: flex;
-  align-items: baseline;
-  margin-bottom: 48px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 72px;
 }
 
-.home__header h1 {
-  margin: 0 24px 0 0;
-  font-size: 56px;
+.status__clock {
+  display: flex;
+  flex-direction: column;
+}
+
+.status__time {
+  font-size: 88px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.status__date {
+  margin-top: 10px;
+  font-size: 28px;
+  color: var(--muted);
+}
+
+.status__net {
+  display: flex;
+  align-items: center;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 26px;
+  color: var(--muted);
+}
+
+.status__net > * + * {
+  margin-left: 14px;
+}
+
+.status__net.is-offline {
+  color: var(--warn);
+}
+
+.status__warn {
+  color: var(--warn);
   font-weight: 600;
 }
 
-.home__tag {
-  color: var(--muted);
-  font-size: 24px;
+.wifi-bars .on {
+  fill: var(--fg);
 }
 
+.wifi-bars .off {
+  fill: var(--faint);
+}
+
+.is-offline .wifi-bars .on {
+  fill: var(--warn);
+}
+
+/* ---- fileiras ---- */
 .row {
-  margin-bottom: 24px;
+  margin-bottom: 40px;
 }
 
 .row__title {
-  margin: 0 0 16px;
-  font-size: 32px;
+  margin: 0 0 18px;
+  font-size: 30px;
   font-weight: 500;
   color: var(--muted);
 }
 
 .row__viewport {
   position: relative;
-  /* respiro para o tile focado (scale + sombra) não ser cortado */
-  margin: -16px calc(-1 * var(--safe-x)) 0;
-  padding: 16px var(--safe-x) 24px;
+  /* respiro para o tile focado (scale + anel) não ser cortado */
+  margin: -20px calc(-1 * var(--safe-x)) 0;
+  padding: 20px var(--safe-x) 8px;
   overflow: hidden;
 }
 
 .row__track {
   position: relative; /* offsetParent dos tiles: base da geometria lógica */
   display: flex;
-  transition: transform 160ms ease-out;
+  transition: transform 180ms ease-out;
   will-change: transform;
 }
 
+/* ---- tile ---- */
 .tile {
+  flex: 0 0 auto;
+  width: 288px;
+  margin-right: 28px;
+}
+
+.tile__card {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 320px;
-  height: 180px;
-  margin-right: 24px;
-  border-radius: 12px;
-  background: var(--tile);
-  flex: 0 0 auto;
-  font-size: 40px;
-  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+  height: 162px; /* 16:9 */
+  border-radius: 16px;
+  background: var(--card);
+  transition: transform 140ms ease-out, box-shadow 140ms ease-out, background-color 140ms ease-out;
 }
 
-.tile {
-  flex-direction: column;
-  text-align: center;
+.tile__card--glyph {
+  color: var(--muted);
 }
 
 .tile__icon {
-  width: 96px;
-  height: 96px;
-  margin-bottom: 12px;
+  width: 112px;
+  height: 112px;
   object-fit: contain;
 }
 
-.tile__label {
-  padding: 0 16px;
+.tile__mono {
+  font-size: 84px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.tile__label--small {
+.tile__label {
+  display: block;
+  margin-top: 14px;
+  padding: 0 4px;
   font-size: 24px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile__badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 18px;
+  color: var(--fg);
+}
+
+.tile__badge--move {
+  left: 10px;
+  right: auto;
+  background: var(--fg);
+  color: var(--bg);
 }
 
 /* Foco por classe: :focus-visible não existe no Chromium 69. */
-.tile.is-focused {
-  transform: scale(1.06);
-  background: #2a2d36;
-  box-shadow: 0 0 0 4px #e8e8ea;
+.tile.is-focused .tile__card {
+  transform: scale(1.08);
+  background-color: var(--card-focus);
+  box-shadow: 0 0 0 4px var(--accent), 0 18px 40px rgba(0, 0, 0, 0.55);
 }
 
-.tile.is-pressed {
+.tile.is-focused .tile__card--glyph {
+  color: var(--fg);
+}
+
+.tile.is-focused .tile__label {
+  color: var(--fg);
+}
+
+.tile.is-pressed .tile__card {
   transform: scale(0.97);
-  background: #3a3e4a;
+}
+
+.tile.is-dimmed .tile__card {
+  opacity: 0.4;
+}
+
+.tile.is-dimmed.is-focused .tile__card {
+  opacity: 0.75;
+}
+
+.tile.is-moving .tile__card {
+  transform: scale(1.08) translateY(-12px);
+}
+
+/* ---- organização ---- */
+.hint {
+  margin: -40px 0 32px;
+  padding: 14px 22px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 24px;
+  color: var(--muted);
+}
+
+.hint b {
+  color: var(--fg);
+}
+
+.menu-scrim {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.menu {
+  width: 560px;
+  padding: 28px 0;
+  border-radius: 20px;
+  background: var(--bg-2);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+.menu__title {
+  padding: 0 36px 18px;
+  font-size: 26px;
+  color: var(--muted);
+}
+
+.menu__item {
+  padding: 18px 36px;
+  font-size: 32px;
+}
+
+.menu__item.is-focused {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* ---- diversos ---- */
+.error {
+  font-size: 24px;
+  color: var(--warn);
+}
+
+.devtag {
+  position: absolute;
+  right: var(--safe-x);
+  bottom: var(--safe-y);
+  font-size: 18px;
+  color: var(--faint);
 }
