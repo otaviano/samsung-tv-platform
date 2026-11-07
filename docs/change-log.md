@@ -132,6 +132,23 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-06 — E8/E9: voltar para a home — captura impossível, power-on funciona
+
+- **Degrau:** 3 (app de experimento `E8BgTest01`). Runbook:
+  [runbooks/e8-background-boot.md](runbooks/e8-background-boot.md).
+- **Requisito registrado:** só controle remoto; power-on na nossa home é mandatório.
+- **Resultado:** captura de tecla em background **impossível**; listeners de estado de
+  app **mudos**; serviço `on-boot` abre UI **congelada** (removido do pacote — risco de
+  repetir no boot). Retorno quando o app de conteúdo fecha **funciona**, mas apps nem
+  sempre fecham (Netflix suspende). **Power-on funciona** em standby de 98 s: processo
+  congela, e ao ligar `online` + salto de relógio disparam `launch(self)`.
+- **Erros próprios:** (1) li uma linha antiga do log como "UI aberta pelo serviço" —
+  corrigido ao revisar a linha do tempo; (2) reinstalei o E8 enquanto o usuário testava,
+  invalidando uma rodada; (3) dois `pkill -f` com padrão que casava o próprio shell.
+- **Pendente:** standby de uma noite; boot frio + "último app".
+
+---
+
 ## 2026-11-06 — tv-app v0.3 (E7): apps reais — listar, curar, abrir
 
 - **Degrau:** 3 (nosso app). Rollback: `tv-app.sh uninstall src/tv-app/dist`.

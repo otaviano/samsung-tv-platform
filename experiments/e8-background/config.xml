@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- E8: (1) app em background recebe teclas registradas com outro app na frente?
+         (2) serviço com on-boot sobe quando a TV liga e consegue abrir a UI?
+     Ver docs/runbooks/e8-background-boot.md -->
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
+        id="http://github.com/otaviano/samsung-tv-platform/e8bg" version="0.1.0" viewmodes="maximized">
+  <tizen:application id="E8BgTest01.ui" package="E8BgTest01" required_version="5.5"/>
+  <!-- Serviço on-boot REMOVIDO após E8a: a UI aberta por ele fica suspensa (JS parado,
+       BACK sem efeito). Código mantido em service/ como registro; não empacotado. -->
+  <tizen:profile name="tv-samsung"/>
+  <content src="index.html"/>
+  <name>E8 Background</name>
+  <feature name="http://tizen.org/feature/screen.size.all"/>
+  <access origin="*" subdomains="true"/>
+  <tizen:privilege name="http://tizen.org/privilege/internet"/>
+  <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+  <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
+  <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="enable"
+                 encryption="disable" install-location="auto" hwkey-event="enable"/>
+</widget>

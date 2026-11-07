@@ -47,7 +47,9 @@ package() {
   # Endpoint do report-sink, gerado fora do git (contém <HOST_IP>).
   # Só para apps que o referenciam (experiments/); o src/tv-app injeta via build --dev.
   if grep -q 'report-target.js' "$app/index.html" 2>/dev/null; then
-    printf "window.REPORT_URL = 'http://%s:%s';\n" "$HOST_IP" "$REPORT_PORT" > "$app/report-target.js"
+    # Formato duplo: <script> no app web (window) e require() no serviço (module).
+    printf "var REPORT_URL = 'http://%s:%s';\nif (typeof window !== 'undefined') window.REPORT_URL = REPORT_URL;\nif (typeof module !== 'undefined') module.exports = REPORT_URL;\n" \
+      "$HOST_IP" "$REPORT_PORT" > "$app/report-target.js"
   fi
   "$TIZEN" bash -lc '
     set -euo pipefail
