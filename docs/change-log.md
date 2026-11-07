@@ -132,6 +132,16 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-07 — E10: sonda de sistema (rede, fontes, apps de sistema)
+
+- **Degrau:** 3. App `E10SysProb`; rollback `tv-app.sh uninstall experiments/e10-system`.
+- **Resultado:** SSID, sinal e status de rede legíveis (`webapis.network`, `systeminfo`);
+  fontes listadas via `VIDEOSOURCE`; Configurações (`coba.setting`) e Fontes
+  (`coba.source`) abrem por cima do app; `tv-viewer` cai no Smart Hub. Detalhes em
+  `docs/runbooks/e10-system.md`.
+
+---
+
 ## 2026-11-07 — tv-app v0.4: power-on validado na home real
 
 - **Contexto:** queda de energia; o roteador devolveu à TV o lease antigo (`<STALE_IP>`).
