@@ -132,6 +132,28 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-07 — tv-app v0.4: power-on validado na home real
+
+- **Contexto:** queda de energia; o roteador devolveu à TV o lease antigo (`<STALE_IP>`).
+  `device.env` atualizado; report-sink reiniciado. Redirect DNS do E5 ainda no IP antigo
+  (exige sudo) — **coleta E5 parada** para o IP novo até mover a regra. Recomendado:
+  reserva DHCP para o MAC da TV no roteador.
+- **Passos:** home aberta → YouTube pela fileira → Prime pelo Smart Hub → TV desligada
+  pelo controle ~100 s → ligada.
+- **Observado:**
+  - YouTube detectado via alias `com.samsung.tv.cobalt-yt` (`/bg/watch seen` em 2 s).
+    Correção confirmada.
+  - Home viva escondida com YouTube + Prime por ≥ 6 min (heartbeat). A morte do teste
+    anterior **não se repetiu** — causa segue desconhecida.
+  - Power-on: `/bg/wake gap 101 s` → `/bg/front ok` em 2 s. Usuário: "abriu o Prime e em
+    1–2 s a home por cima". Confirmado (1 amostra na home real).
+  - `launch(self)` recarrega a página (beacons `beforeunload`/`pagehide` antes do novo
+    `/boot`) — confirma o motivo da persistência do foco.
+- **Ajuste possível:** reduzir `WAKE_DELAY_MS` (1,5 s) diminui o flash do Prime, com risco
+  de o "último app" subir depois e cobrir a home. Mantido.
+
+---
+
 ## 2026-11-07 — tv-app v0.4: ciclo de vida (power-on, retorno ao fim do app, BACK esconde)
 
 - **Degrau:** 3. Rollback: `scripts/tv-app.sh uninstall src/tv-app/dist`. E8 desinstalado
