@@ -5,6 +5,7 @@ declare const __DEV__: boolean;
 // Subconjunto mínimo das APIs Tizen usadas pelo app. Presença confirmada no device (E6).
 interface TizenInputDevice {
   registerKey(name: string): void;
+  unregisterKey(name: string): void;
 }
 interface TizenApplication {
   exit(): void;

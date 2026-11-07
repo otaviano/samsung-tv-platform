@@ -26,7 +26,7 @@ function useApps(): { apps: InstalledApp[] | null; error: string | null } {
     listApps()
       .then((all) => {
         const curated = curate(all, SELF_ID);
-        report('/apps', { ms: Math.round(performance.now() - t0), total: all.length, curated: curated.map((a) => a.id) });
+        report('/apps', { ms: Math.round(performance.now() - t0), total: all.length, curated: curated.map((a) => a.id), icons: curated.map((a) => a.iconPath) });
         saveCachedApps(curated);
         setApps(curated);
       })
@@ -50,9 +50,16 @@ function open(bg: Background | null, id: string) {
     });
 }
 
+// Fontes e Configurações fora da fileira até resolver o backlog: abrem e fecham sozinhas
+// em < 2 s (2026-11-07, docs/change-log.md). Hipótese: tv-viewer travado.
+const SYSTEM_READY = false;
 const SYSTEM_TILES: TileData[] = [
-  { id: SYSTEM_APPS.sources, label: 'Fontes', glyph: IconSources },
-  { id: SYSTEM_APPS.settings, label: 'Configurações', glyph: IconSettings },
+  ...(SYSTEM_READY
+    ? [
+        { id: SYSTEM_APPS.sources, label: 'Fontes', glyph: IconSources },
+        { id: SYSTEM_APPS.settings, label: 'Configurações', glyph: IconSettings },
+      ]
+    : []),
   { id: ARRANGE_ID, label: 'Organizar apps', glyph: IconArrange },
 ];
 
@@ -175,9 +182,37 @@ export function App({ bg }: { bg: Background }) {
       onMove={(id) => {
         saveFocus(id);
         report('/focus', { id });
+        if (__DEV__) measureFrames(id);
       }}
     >
       <Home bg={bg} />
     </FocusRoot>
   );
+}
+
+/** Só dev: quadros durante a transição de foco (~400 ms). Intervalo > 34 ms = quadro perdido. */
+let lastKeyAt = 0;
+if (__DEV__) document.addEventListener('keydown', () => (lastKeyAt = performance.now()), true);
+function measureFrames(id: string | null) {
+  const start = performance.now();
+  const keyToFocus = lastKeyAt ? Math.round(start - lastKeyAt) : null;
+  const gaps: number[] = [];
+  let prev = start;
+  let firstFrame: number | null = null;
+  const tick = (t: number) => {
+    if (firstFrame === null) firstFrame = Math.round(t - (lastKeyAt || start));
+    gaps.push(t - prev);
+    prev = t;
+    if (t - start < 400) requestAnimationFrame(tick);
+    else
+      report('/perf', {
+        id,
+        keyToFocus,
+        keyToFirstFrame: firstFrame,
+        frames: gaps.length,
+        maxGap: Math.round(Math.max.apply(null, gaps)),
+        slow: gaps.filter((g) => g > 34).length,
+      });
+  };
+  requestAnimationFrame(tick);
 }

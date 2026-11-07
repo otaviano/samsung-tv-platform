@@ -31,6 +31,21 @@ export function registerKeys(): string[] {
   return ok;
 }
 
+export function unregisterKeys(): string[] {
+  const tizen = window.tizen;
+  if (!tizen) return [];
+  const ok: string[] = [];
+  for (const name of REGISTERED) {
+    try {
+      tizen.tvinputdevice.unregisterKey(name);
+      ok.push(name);
+    } catch {
+      // ignorar
+    }
+  }
+  return ok;
+}
+
 export function exitApp(): void {
   window.tizen?.application.getCurrentApplication().exit();
 }

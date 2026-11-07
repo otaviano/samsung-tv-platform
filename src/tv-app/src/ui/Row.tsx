@@ -8,6 +8,7 @@ import { useFocusApi, useFocusable } from '../focus/FocusRoot';
 import type { Rect } from '../focus/geometry';
 import { report } from '../platform/report';
 import { monogramHue } from './icons';
+import { BRAND_TILES } from './brand';
 
 export interface TileData {
   id: string;
@@ -105,6 +106,7 @@ function Tile(props: {
 }) {
   const [pressed, setPressed] = useState(false);
   const [iconFailed, setIconFailed] = useState(false);
+  const [iconMode, setIconMode] = useState<'full' | 'inset'>('inset');
   const focused = useFocusable(props.item.id, {
     group: props.group,
     rect: props.rect,
@@ -122,35 +124,92 @@ function Tile(props: {
     (pressed ? ' is-pressed' : '') +
     (dimmed ? ' is-dimmed' : '') +
     (moving ? ' is-moving' : '');
-  const showImg = !glyph && icon && !iconFailed;
+  const brand = BRAND_TILES[props.item.id];
+  const showImg = !glyph && !brand && icon && !iconFailed;
+  let card;
+  if (glyph) {
+    card = <div class="tile__card tile__card--glyph">{glyph()}</div>;
+  } else if (brand) {
+    card = (
+      <div class="tile__card tile__card--text" style={{ backgroundColor: brand.bg, color: brand.fg }}>
+        <span class="tile__text">{brand.text}</span>
+      </div>
+    );
+  } else if (showImg) {
+    card = (
+      <div class={'tile__card tile__card--' + iconMode}>
+        <img
+          class="tile__icon"
+          src={icon}
+          alt=""
+          onLoad={(e) => {
+            const img = e.currentTarget as HTMLImageElement;
+            setIconMode(opaqueCorners(img) ? 'full' : 'inset');
+            report('/icon', { id: props.item.id, ok: true });
+            if (__DEV__) exportIcon(props.item.id, img);
+          }}
+          onError={() => {
+            report('/icon', { id: props.item.id, ok: false, src: icon });
+            setIconFailed(true);
+          }}
+        />
+      </div>
+    );
+  } else {
+    card = (
+      <div class="tile__card tile__card--text" style={{ backgroundColor: `hsl(${monogramHue(props.item.id)}, 32%, 26%)` }}>
+        <span class="tile__text">{label}</span>
+      </div>
+    );
+  }
   return (
     <div class={cls} ref={props.setEl}>
-      <div
-        class={'tile__card' + (glyph ? ' tile__card--glyph' : '') + (!glyph && !showImg ? ' tile__card--mono' : '')}
-        style={!glyph && !showImg ? { backgroundColor: `hsl(${monogramHue(props.item.id)}, 38%, 30%)` } : undefined}
-      >
-        {glyph ? (
-          glyph()
-        ) : showImg ? (
-          <img
-            class="tile__icon"
-            src={icon}
-            alt=""
-            onLoad={() => report('/icon', { id: props.item.id, ok: true })}
-            onError={() => {
-              // Netflix e Prime Video (pré-instalados de sistema) falham aqui; o ícone do pacote
-              // também não serve (mesmo caminho / vazio) — medido em 2026-11-06.
-              report('/icon', { id: props.item.id, ok: false, src: icon });
-              setIconFailed(true);
-            }}
-          />
-        ) : (
-          <span class="tile__mono">{label.trim().charAt(0).toUpperCase()}</span>
-        )}
+      <div class="tile__frame">
+        {card}
         {dimmed ? <span class="tile__badge">oculto</span> : null}
         {moving ? <span class="tile__badge tile__badge--move">◀ ▶</span> : null}
       </div>
       <span class="tile__label">{label}</span>
     </div>
   );
+}
+
+/**
+ * Ícone de fundo cheio (cantos opacos) ocupa o tile inteiro; ícone com transparência
+ * (forma solta) vai centralizado sobre fundo neutro. Canvas não fica "tainted" com
+ * ícones de /opt/usr/apps (toDataURL funcionou no device, 2026-11-07).
+ */
+function opaqueCorners(img: HTMLImageElement): boolean {
+  try {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext('2d');
+    if (!ctx || !w || !h) return false;
+    ctx.drawImage(img, 0, 0);
+    const pts: Array<[number, number]> = [[1, 1], [w - 2, 1], [1, h - 2], [w - 2, h - 2]];
+    return pts.every(([x, y]) => (ctx.getImageData(x, y, 1, 1).data[3] ?? 0) > 240);
+  } catch {
+    return false;
+  }
+}
+
+/** Só dev: exporta o ícone como PNG para o report-sink (o SDB não deixa puxar o arquivo). */
+const exported = new Set<string>();
+function exportIcon(id: string, img: HTMLImageElement): void {
+  if (exported.has(id)) return;
+  exported.add(id);
+  try {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const ctx = c.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0);
+    report('/icondata', { id, w: c.width, h: c.height, png: c.toDataURL('image/png') });
+  } catch (e) {
+    report('/icondata', { id, error: String(e) });
+  }
 }

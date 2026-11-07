@@ -132,6 +132,30 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-07 — tv-app v0.5 (ajustes): ícones, foco e Fontes/Configurações em backlog
+
+- **Ícones:** tiles quadrados; ícone de fundo cheio (cantos opacos, medido via canvas)
+  ocupa o tile, ícone com transparência vai centralizado; Netflix, Prime e YouTube viram
+  tile de texto com cor da marca (o do YouTube é o genérico do Tizen; os outros dois não
+  carregam). Ícones são pequenos: 117–170 px. Aprovado pelo usuário ("muito melhor").
+- **Foco:** medido no device — 3–16 ms da tecla ao foco, ~60 fps na transição. O
+  incômodo era estético ("quadrado", anel branco). Trocado por: tiles sem foco a 55%,
+  focado aceso com brilho difuso e reflexo em degradê, borda fina translúcida.
+  Animação só de transform/opacity. Aprovado ("foco ok").
+- **Fontes/Configurações — BACKLOG:** `launch` de `coba.source`/`coba.setting` dá ok, o
+  app entra no contexto e **sai sozinho em < 2 s**, sem aparecer. Descartado:
+  `background-support` (testado desligado), teclas registradas (desregistradas antes do
+  launch), keyup do OK (launch atrasado 600 ms), instância antiga rodando (não estava).
+  **O E10, que abria às 14:23, também passou a falhar** → estado da TV, não da home.
+  Hipótese principal: o launch de `org.tizen.tv-viewer` no E10 (14:23:23, caiu no Smart
+  Hub) deixou o tv-viewer num estado ruim; todas as falhas vieram depois. Próximo teste:
+  boot frio (tomada) → E10 itens 1 e 2, sem tocar no `tv-viewer`. Tiles ocultos na home
+  (`SYSTEM_READY = false`) até lá. E10 desinstalado.
+- **Diagnóstico:** ícones exportados via canvas → report-sink (SDB não deixa `pull` em
+  `/opt/usr/apps/*/shared/res`). O report-sink trunca corpos > 64 KB.
+
+---
+
 ## 2026-11-07 — tv-app v0.5: layout, barra de status, Sistema e organização de apps
 
 - **Degrau:** 3. Rollback: reinstalar v0.4 (`git checkout` + build) ou desinstalar.

@@ -38,7 +38,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 72px;
+  margin-bottom: 56px;
 }
 
 .status__clock {
@@ -117,78 +117,141 @@ body {
 .row__track {
   position: relative; /* offsetParent dos tiles: base da geometria lógica */
   display: flex;
-  transition: transform 180ms ease-out;
+  transition: transform 320ms cubic-bezier(0.22, 0.8, 0.24, 1);
   will-change: transform;
 }
 
 /* ---- tile ---- */
 .tile {
   flex: 0 0 auto;
-  width: 288px;
-  margin-right: 28px;
+  width: 208px;
+  margin-right: 36px;
+}
+
+/* Moldura: escala, anel e sombra. Só transform e opacity animam — box-shadow e
+   background repintam a cada quadro e engasgam no ARM da TV ("quadrado", 2026-11-07). */
+.tile__frame {
+  position: relative;
+  width: 208px;
+  height: 208px;
+  transition: transform 280ms cubic-bezier(0.2, 0.9, 0.25, 1);
+  will-change: transform;
+}
+
+/* Brilho difuso atrás do tile (pré-renderizado; só a opacidade anima). */
+.tile__frame::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  border-radius: 28px;
+  box-shadow: 0 0 48px 10px rgba(190, 205, 255, 0.28), 0 22px 44px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 260ms ease-out;
+  pointer-events: none;
+}
+
+/* Reflexo de luz por cima + borda fina translúcida. */
+.tile__frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.06) 38%, rgba(255, 255, 255, 0) 60%);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transition: opacity 260ms ease-out;
+  pointer-events: none;
 }
 
 .tile__card {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 162px; /* 16:9 */
-  border-radius: 16px;
+  width: 208px;
+  height: 208px;
+  border-radius: 28px;
+  overflow: hidden;
   background: var(--card);
-  transition: transform 140ms ease-out, box-shadow 140ms ease-out, background-color 140ms ease-out;
+  opacity: 0.55;
+  transition: opacity 260ms ease-out;
 }
 
-.tile__card--glyph {
-  color: var(--muted);
+.tile__card--full .tile__icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.tile__icon {
-  width: 112px;
-  height: 112px;
+.tile__card--inset {
+  background: #262a34;
+}
+
+.tile__card--inset .tile__icon {
+  width: 128px;
+  height: 128px;
   object-fit: contain;
 }
 
-.tile__mono {
-  font-size: 84px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.92);
+.tile__card--glyph {
+  background: #1f232c;
+  color: #aeb3c2;
+}
+
+.tile__text {
+  padding: 0 18px;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  letter-spacing: -0.5px;
 }
 
 .tile__label {
   display: block;
-  margin-top: 14px;
-  padding: 0 4px;
+  margin-top: 18px;
   font-size: 24px;
+  text-align: center;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  opacity: 0.6;
+  transition: opacity 260ms ease-out;
 }
 
 .tile__badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   padding: 4px 10px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   font-size: 18px;
   color: var(--fg);
 }
 
 .tile__badge--move {
-  left: 10px;
+  left: 12px;
   right: auto;
   background: var(--fg);
   color: var(--bg);
 }
 
 /* Foco por classe: :focus-visible não existe no Chromium 69. */
-.tile.is-focused .tile__card {
-  transform: scale(1.08);
-  background-color: var(--card-focus);
-  box-shadow: 0 0 0 4px var(--accent), 0 18px 40px rgba(0, 0, 0, 0.55);
+.tile.is-focused .tile__frame {
+  transform: scale(1.12);
+}
+
+.tile.is-focused .tile__card,
+.tile.is-focused .tile__frame::before,
+.tile.is-focused .tile__frame::after {
+  opacity: 1;
 }
 
 .tile.is-focused .tile__card--glyph {
@@ -197,22 +260,23 @@ body {
 
 .tile.is-focused .tile__label {
   color: var(--fg);
+  opacity: 1;
 }
 
-.tile.is-pressed .tile__card {
-  transform: scale(0.97);
+.tile.is-pressed .tile__frame {
+  transform: scale(1.02);
 }
 
 .tile.is-dimmed .tile__card {
-  opacity: 0.4;
+  opacity: 0.25;
 }
 
 .tile.is-dimmed.is-focused .tile__card {
-  opacity: 0.75;
+  opacity: 0.6;
 }
 
-.tile.is-moving .tile__card {
-  transform: scale(1.08) translateY(-12px);
+.tile.is-moving .tile__frame {
+  transform: scale(1.12) translateY(-14px);
 }
 
 /* ---- organização ---- */

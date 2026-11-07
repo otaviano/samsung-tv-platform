@@ -14,6 +14,9 @@
   <tizen:privilege name="http://tizen.org/privilege/internet"/>
   <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
   <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
+  <!-- tv.window: presente no E10, onde coba.source/coba.setting abriram por cima; na v0.5
+       sem ele o launch dá ok e nada aparece. Teste de hipótese (2026-11-07). -->
+  <tizen:privilege name="http://tizen.org/privilege/tv.window"/>
   <!-- webapis.network: status/SSID na barra superior (E10) -->
   <tizen:privilege name="http://developer.samsung.com/privilege/network.public"/>
   <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="enable"

@@ -1,7 +1,7 @@
 // Ícones próprios em SVG (sem assets de terceiros). Traço em currentColor.
 import type { JSX } from 'preact';
 
-const base = { width: 72, height: 72, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' } as const;
+const base = { width: 88, height: 88, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' } as const;
 
 export const IconSources = (): JSX.Element => (
   <svg {...base}>
