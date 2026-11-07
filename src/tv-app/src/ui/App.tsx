@@ -3,11 +3,11 @@ import { useEffect, useState } from 'preact/hooks';
 import { FocusRoot, useFocusApi } from '../focus/FocusRoot';
 import { Row, type TileData } from './Row';
 import { report } from '../platform/report';
-import { launchApp, listApps, type InstalledApp } from '../platform/apps';
+import { SELF_ID, launchApp, listApps, type InstalledApp } from '../platform/apps';
 import { curate } from '../data/curate';
 import { loadCachedApps, saveCachedApps } from '../data/appsCache';
-
-const SELF_ID = 'OtvHome001.home';
+import { loadFocus, saveFocus } from '../data/focusMemory';
+import type { Background } from '../lifecycle/background';
 
 // Fileiras de exemplo, ainda sem fonte de dados (control plane/agente, fases seguintes).
 function tiles(prefix: string, n: number): TileData[] {
@@ -42,23 +42,30 @@ function useApps(): { items: TileData[] | null; error: string | null } {
   return { items: apps ? toTiles(apps) : null, error };
 }
 
-function open(item: TileData) {
+function open(bg: Background, item: TileData) {
   const t0 = performance.now();
   report('/select', { id: item.id });
+  bg.watchLaunch(item.id);
   launchApp(item.id)
     .then(() => report('/launch', { id: item.id, ok: true, ms: Math.round(performance.now() - t0) }))
-    .catch((e: Error) => report('/launch', { id: item.id, ok: false, error: e.message }));
+    .catch((e: Error) => {
+      bg.cancelWatch();
+      report('/launch', { id: item.id, ok: false, error: e.message });
+    });
 }
 
-function Home() {
+function Home({ bg }: { bg: Background }) {
   const { fm } = useFocusApi();
   const { items, error } = useApps();
   const firstApp = items?.[0]?.id;
 
-  // Apps chegam depois do primeiro render: se o usuário ainda não navegou, o foco vai para
-  // o primeiro app em vez de ficar num placeholder.
+  // Cada volta à frente recarrega a página: restaurar o último foco se ele ainda existe;
+  // senão o primeiro app (que pode chegar depois do primeiro render).
   useEffect(() => {
-    if (firstApp && !fm.userHasMoved) fm.focus(firstApp);
+    if (fm.userHasMoved) return;
+    const saved = loadFocus();
+    if (saved && fm.has(saved)) fm.focus(saved);
+    else if (firstApp) fm.focus(firstApp);
   }, [firstApp]);
 
   return (
@@ -66,11 +73,11 @@ function Home() {
       <header class="home__header">
         <h1>Home</h1>
         <span class="home__tag">
-          v0.3 · apps reais{__DEV__ ? ' · dev' : ''}
+          v0.4{__DEV__ ? ' · dev' : ''}
           {error ? ` · erro ao listar apps: ${error}` : ''}
         </span>
       </header>
-      {items && items.length > 0 ? <Row id="apps" title="Apps" items={items} onSelect={open} /> : null}
+      {items && items.length > 0 ? <Row id="apps" title="Apps" items={items} onSelect={(it) => open(bg, it)} /> : null}
       {PLACEHOLDER_ROWS.map((r) => (
         <Row key={r.id} id={r.id} title={r.title} items={r.items} onSelect={(it) => report('/select', { id: it.id })} />
       ))}
@@ -78,10 +85,15 @@ function Home() {
   );
 }
 
-export function App() {
+export function App({ bg }: { bg: Background }) {
   return (
-    <FocusRoot onMove={(id) => report('/focus', { id })}>
-      <Home />
+    <FocusRoot
+      onMove={(id) => {
+        saveFocus(id);
+        report('/focus', { id });
+      }}
+    >
+      <Home bg={bg} />
     </FocusRoot>
   );
 }

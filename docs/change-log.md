@@ -132,6 +132,32 @@ Entradas em ordem cronológica inversa (mais recente no topo).
 
 ---
 
+## 2026-11-07 — tv-app v0.4: ciclo de vida (power-on, retorno ao fim do app, BACK esconde)
+
+- **Degrau:** 3. Rollback: `scripts/tv-app.sh uninstall src/tv-app/dist`. E8 desinstalado
+  antes (dois apps em background disputariam a frente).
+- **Mudanças:** `background-support="enable"`; `src/lifecycle/` (salto de relógio → power-on;
+  polling de `getAppsContext` → app aberto pela home terminou → `launch(self)`); foco
+  persistido em localStorage (cada volta recarrega a página); BACK na raiz chama `hide()`
+  em vez de `exit()`.
+- **Observado no device:**
+  - BACK → `hide()` funciona: home sai da frente, cai no Smart Hub, processo segue vivo.
+    Confirmado.
+  - HBO Max aberto pela fileira, fechado com BACK → home volta (55 s depois, na hora do
+    fechamento). Confirmado.
+  - YouTube aberto pela fileira **nunca aparece** no contexto como
+    `9Ur5IzDKqV.TizenYouTube`: roda como `com.samsung.tv.cobalt-yt`. Corrigido com tabela
+    de aliases (`watch.ts`); validação no device pendente.
+  - Power-on, 2 tentativas: **não voltou** (1ª abriu o Prime, 2ª o Smart Hub/TV Plus). O
+    último sinal da home foi 12:45:49, antes do standby → processo morreu antes. Causa
+    desconhecida (Hipótese: encerrado por memória ao abrir YouTube/Prime). Sem heartbeat
+    não dava para saber — adicionado heartbeat de 15 s e beacon em `pagehide`
+    (só build dev). Na reexecução a home sobreviveu ≥ 4 min escondida com YouTube aberto;
+    o teste foi interrompido por queda de energia. `performance.memory` reporta 0.
+- **Pendente:** repetir YouTube → Prime → standby com o heartbeat.
+
+---
+
 ## 2026-11-07 — E9 (boot frio, tentativa 2): "último app" não vale após corte de energia
 
 - **Configuração (conferida pelo usuário):** "Executar automaticamente o último app"

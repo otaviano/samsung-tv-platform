@@ -27,6 +27,11 @@ export class FocusManager {
     return this.moved;
   }
 
+  /** O alvo está registrado no layout atual? */
+  has(id: string): boolean {
+    return this.measure().some((n) => n.id === id);
+  }
+
   subscribe(fn: (id: string | null) => void): () => void {
     this.listeners.add(fn);
     return () => this.listeners.delete(fn);

@@ -34,3 +34,17 @@ export function registerKeys(): string[] {
 export function exitApp(): void {
   window.tizen?.application.getCurrentApplication().exit();
 }
+
+/**
+ * BACK na raiz: sair da frente SEM encerrar o processo — encerrar desliga o retorno no
+ * power-on (o app só volta a rodar quando aberto de novo). hide() no TV: Hipótese, medir.
+ * Se falhar, não faz nada (Home do controle continua levando ao Smart Hub).
+ */
+export function hideApp(): 'hide' | 'error' {
+  try {
+    window.tizen?.application.getCurrentApplication().hide();
+    return 'hide';
+  } catch {
+    return 'error';
+  }
+}

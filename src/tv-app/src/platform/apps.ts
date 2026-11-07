@@ -1,6 +1,9 @@
 // Apps instalados e abertura de app via tizen.application. O que o device entrega a um app
 // NOSSO (filtro, ícones, permissão de launch) é medido no device antes de ser assumido.
 
+/** App id desta home (static/config.xml). */
+export const SELF_ID = 'OtvHome001.home';
+
 export interface InstalledApp {
   id: string;
   name: string;

@@ -8,6 +8,12 @@ interface TizenInputDevice {
 }
 interface TizenApplication {
   exit(): void;
+  /** Tira o app da frente sem encerrar. Comportamento no TV: a medir (v0.4). */
+  hide(): void;
+}
+interface TizenAppContext {
+  id: string;
+  appId: string;
 }
 interface TizenAppInfo {
   id: string;
@@ -28,6 +34,7 @@ interface Tizen {
     getCurrentApplication(): TizenApplication;
     getAppsInfo(ok: (apps: TizenAppInfo[]) => void, err?: (e: TizenWebAPIError) => void): void;
     launch(id: string, ok?: () => void, err?: (e: TizenWebAPIError) => void): void;
+    getAppsContext(ok: (ctxs: TizenAppContext[]) => void, err?: (e: TizenWebAPIError) => void): void;
   };
 }
 interface Window {
